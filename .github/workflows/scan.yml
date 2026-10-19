@@ -1,0 +1,40 @@
+name: agent-attack-path-scan
+
+# Scans an OpenAPI spec for agent attack chains and uploads the findings to
+# GitHub code scanning. Gates the build on any error-level finding.
+# Point SPEC (and optionally BOUNDARIES) at your API's files.
+
+on:
+  pull_request:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  # Replace these with your own API's spec and boundaries files.
+  SPEC: examples/reference_openapi.json
+  BOUNDARIES: examples/reference_boundaries.yaml
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: Run the scanner
+        # The bundled example is deliberately vulnerable, so this run only
+        # reports. In your own repo add `--fail-on error` to gate the build.
+        run: |
+          apd scan "$SPEC" --boundaries "$BOUNDARIES" --sarif apd.sarif
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: apd.sarif

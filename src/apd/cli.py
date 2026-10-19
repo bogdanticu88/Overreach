@@ -83,6 +83,10 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--boundaries", help="path to a boundaries file (scopes findings)")
     s.add_argument("--top", type=int, default=10, help="chains to show")
     s.add_argument("--json", action="store_true", help="emit JSON")
+    s.add_argument("--sarif", help="write SARIF 2.1.0 findings to this path")
+    s.add_argument("--fail-on", choices=["none", "note", "warning", "error"],
+                   default="none", help="exit non-zero if a finding at or above "
+                   "this level is present")
 
     sub.add_parser("validate", help="run the bundled reference API demo end to end")
 
@@ -144,6 +148,19 @@ def main(argv: list[str] | None = None) -> int:
                           f"effort {o.total_effort}")
                     for ctl in o.controls:
                         print(f"    - {ctl.description}")
+        if args.sarif:
+            from apd.report import to_sarif
+            with open(args.sarif, "w") as fh:
+                json.dump(to_sarif(chains), fh, indent=2)
+            if not args.json:
+                print(f"\nSARIF written to {args.sarif}")
+        if args.fail_on != "none":
+            order = {"note": 1, "warning": 2, "error": 3}
+            threshold = order[args.fail_on]
+            worst = max((3 if c.impact >= 5 else 2 if c.impact == 4 else 1)
+                        for c in chains) if chains else 0
+            if worst >= threshold:
+                return 1
         return 0
 
     if args.cmd == "validate":
