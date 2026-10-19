@@ -1,8 +1,16 @@
 <p align="center">
-  <img src="assets/overreach-logo.svg" alt="Overreach" width="420">
+  <img src="assets/overreach-logo.png" alt="Overreach" width="520">
 </p>
 
 <p align="center"><strong>Find out what your AI agents can be talked into doing with your APIs.</strong></p>
+
+<p align="center">
+  <a href="https://github.com/bogdanticu88/OverReach/actions/workflows/ci.yml"><img src="https://github.com/bogdanticu88/OverReach/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="License: AGPL-3.0">
+  <img src="https://img.shields.io/badge/python-3.12%2B-blue.svg" alt="Python 3.12+">
+  <img src="https://img.shields.io/badge/evidence-hypothetical%20%E2%86%92%20validated-6b7cff.svg" alt="Evidence levels">
+  <img src="https://img.shields.io/badge/status-pre--alpha-orange.svg" alt="Status: pre-alpha">
+</p>
 
 # Overreach
 
