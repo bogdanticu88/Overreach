@@ -1,0 +1,20 @@
+[project]
+name = "apd"
+version = "0.0.1"
+description = "Agent Attack Path Discovery: finds chains of legitimate API operations that reach a harmful outcome."
+requires-python = ">=3.12"
+dependencies = ["PyYAML>=6.0", "networkx>=3.0"]
+
+[project.optional-dependencies]
+dev = ["pytest", "mypy", "types-PyYAML"]
+
+[project.scripts]
+apd = "apd.cli:main"
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

@@ -1,0 +1,96 @@
+"""Command line entry point.
+
+v0.1 ships one read-only command: ``profile``. It parses a spec, runs
+rule-based inference and taint pairing, and prints coverage statistics. It
+finds no chains: that comes after the hand-written baseline exists, so the
+baseline stays an independent check.
+"""
+from __future__ import annotations
+
+import argparse
+import glob
+import json
+import sys
+from collections import Counter
+from pathlib import Path
+
+import yaml
+
+from apd import __version__
+from apd.infer import infer_api, uncertain_operations
+from apd.ingest import load_path, merge_docs
+from apd.model import Api, EffectKind
+from apd.taint import find_links
+
+
+def _load(path: str) -> Api:
+    p = Path(path)
+    if p.is_dir():
+        docs = []
+        for f in sorted(glob.glob(str(p / "*.yaml")) + glob.glob(str(p / "*.yml"))):
+            data = yaml.safe_load(Path(f).read_text(encoding="utf-8", errors="replace"))
+            if isinstance(data, dict):
+                docs.append(data)
+        return merge_docs(docs, title=p.name, version="merged")
+    return load_path(p)
+
+
+def _profile(api: Api) -> dict[str, object]:
+    api = infer_api(api)
+    method_counts: Counter[str] = Counter(op.method for op in api.operations)
+    effect_counts: Counter[str] = Counter(
+        e.kind.value for op in api.operations for e in op.effects
+    )
+    exit_ops = [op.key for op in api.operations if any(f.is_exit for f in op.fields)]
+    identity_ops = [op.key for op in api.operations
+                    if any(e.kind == EffectKind.CHANGE_IDENTITY for e in op.effects)]
+    links = find_links(api)
+    uncertain = uncertain_operations(api)
+    return {
+        "title": api.title,
+        "version": api.version,
+        "source_hash": api.source_hash,
+        "operations": len(api.operations),
+        "methods": dict(method_counts),
+        "effects": dict(effect_counts),
+        "exit_operations": len(exit_ops),
+        "identity_operations": len(identity_ops),
+        "write_read_links": len(links),
+        "uncertain_operations": len(uncertain),
+        "warnings": list(api.warnings),
+        "sample_exit_ops": sorted(exit_ops)[:8],
+        "sample_links": [
+            {"object": lk.obj, "writer": lk.writer, "reader": lk.reader,
+             "fields": list(lk.free_text_fields)}
+            for lk in links[:8]
+        ],
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="apd", description=__doc__)
+    parser.add_argument("--version", action="version", version=f"apd {__version__}")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("profile", help="parse a spec and print coverage stats")
+    p.add_argument("spec", help="path to an OpenAPI file or a directory of fragments")
+    p.add_argument("--json", action="store_true", help="emit JSON")
+    args = parser.parse_args(argv)
+
+    if args.cmd == "profile":
+        api = _load(args.spec)
+        report = _profile(api)
+        if args.json:
+            print(json.dumps(report, indent=2))
+        else:
+            for k, v in report.items():
+                if k.startswith("sample_") or k in ("effects", "methods"):
+                    print(f"{k}:")
+                    print("  " + json.dumps(v, indent=2).replace("\n", "\n  "))
+                else:
+                    print(f"{k}: {v}")
+        return 0
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

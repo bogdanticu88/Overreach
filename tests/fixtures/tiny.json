@@ -1,0 +1,57 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "Tiny", "version": "1.0"},
+  "paths": {
+    "/issues/{id}": {
+      "get": {
+        "operationId": "getIssue",
+        "tags": ["issue"],
+        "responses": {"200": {"description": "ok"}}
+      }
+    },
+    "/issues/{id}/comments": {
+      "post": {
+        "operationId": "addComment",
+        "tags": ["issue"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {"body": {"type": "string"}}
+              }
+            }
+          }
+        },
+        "responses": {"201": {"description": "created"}}
+      }
+    },
+    "/repos/{owner}/{repo}/hooks": {
+      "post": {
+        "operationId": "createHook",
+        "tags": ["repository"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {"type": "string", "format": "uri"},
+                  "events": {"type": "array"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"201": {"description": "created"}}
+      }
+    },
+    "/user/password": {
+      "put": {
+        "operationId": "changePassword",
+        "tags": ["user"],
+        "responses": {"200": {"description": "ok"}}
+      }
+    }
+  }
+}
