@@ -17,9 +17,12 @@ from pathlib import Path
 import yaml
 
 from apd import __version__
+from apd.breaker import recommend
+from apd.chains import find_chains
 from apd.infer import infer_api, uncertain_operations
 from apd.ingest import load_path, merge_docs
 from apd.model import Api, EffectKind
+from apd.report import chain_to_dict, narrative, option_to_dict
 from apd.taint import find_links
 
 
@@ -74,6 +77,14 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("profile", help="parse a spec and print coverage stats")
     p.add_argument("spec", help="path to an OpenAPI file or a directory of fragments")
     p.add_argument("--json", action="store_true", help="emit JSON")
+
+    s = sub.add_parser("scan", help="find attack chains and ranked fixes")
+    s.add_argument("spec", help="path to an OpenAPI file or a directory of fragments")
+    s.add_argument("--top", type=int, default=10, help="chains to show")
+    s.add_argument("--json", action="store_true", help="emit JSON")
+
+    sub.add_parser("validate", help="run the bundled reference API demo end to end")
+
     args = parser.parse_args(argv)
 
     if args.cmd == "profile":
@@ -89,7 +100,85 @@ def main(argv: list[str] | None = None) -> int:
                 else:
                     print(f"{k}: {v}")
         return 0
+
+    if args.cmd == "scan":
+        api = infer_api(_load(args.spec))
+        chains = find_chains(api)
+        top = chains[:args.top]
+        options = recommend(chains)
+        if args.json:
+            print(json.dumps({
+                "title": api.title,
+                "chains_found": len(chains),
+                "chains": [chain_to_dict(c) for c in top],
+                "fix_options": [option_to_dict(o) for o in options],
+            }, indent=2))
+        else:
+            specific = [c for c in chains if not c.generic]
+            generic = [c for c in chains if c.generic]
+            print(f"{api.title}: {len(chains)} finding(s), evidence: hypothetical "
+                  f"from spec\n  {len(specific)} specific data-flow chain(s), "
+                  f"{len(generic)} dangerous tool(s) reachable from untrusted input\n")
+            for i, c in enumerate(top, 1):
+                tag = "generic" if c.generic else "specific"
+                extra = (f" (reachable from {c.entry_count} untrusted entries)"
+                         if c.generic else "")
+                print(f"[{i}] {c.chain_id}  {c.outcome.value}  [{tag}]{extra}")
+                print("    " + narrative(c))
+                print("    path: " + " -> ".join(s.op_key for s in c.steps))
+                print()
+            if generic:
+                print("Note: generic findings assume an injected agent may call "
+                      "any tool it holds.\n      Supply a boundaries file to limit "
+                      "this to the agent's real scope.\n")
+            if options:
+                print("Ranked fixes:")
+                for j, o in enumerate(options, 1):
+                    print(f"  Option {j}: breaks {o.chains_broken}/{o.chains_total} "
+                          f"chains, {o.workflow_hits} workflow hit(s), "
+                          f"effort {o.total_effort}")
+                    for ctl in o.controls:
+                        print(f"    - {ctl.description}")
+        return 0
+
+    if args.cmd == "validate":
+        return _validate_demo()
     return 2
+
+
+def _validate_demo() -> int:
+    """Scan the bundled reference API, then validate chains by executing them
+    with canary data and watching the canary leave."""
+    import json as _json
+
+    from fastapi.testclient import TestClient
+
+    from apd.chains import find_chains
+    from apd.replay import validate_chain
+    from apd.reference_api import app, reset_state
+
+    reset_state()
+    client = TestClient(app)
+    spec = _json.dumps(client.get("/openapi.json").json())
+    api = infer_api(_load_text(spec))
+    chains = find_chains(api)
+    print(f"Reference API: {len(chains)} finding(s) from the spec.\n")
+    for ch in chains:
+        reset_state()
+        res = validate_chain(ch, TestClient(app))
+        mark = "VALIDATED" if res.evidence.value == "validated" else res.evidence.value
+        print(f"[{ch.chain_id}] {ch.outcome.value}: {mark}")
+        print(f"    {narrative(ch)}")
+        if res.detail:
+            print(f"    proof: {res.detail}"
+                  + (f" (canary {res.canary})" if res.canary else ""))
+        print()
+    return 0
+
+
+def _load_text(text: str) -> Api:
+    from apd.ingest import load_text
+    return load_text(text)
 
 
 if __name__ == "__main__":

@@ -24,6 +24,11 @@
           }
         },
         "responses": {"201": {"description": "created"}}
+      },
+      "get": {
+        "operationId": "listComments",
+        "tags": ["issue"],
+        "responses": {"200": {"description": "ok"}}
       }
     },
     "/repos/{owner}/{repo}/hooks": {

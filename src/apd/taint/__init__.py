@@ -42,15 +42,26 @@ def _free_text(op: Operation) -> tuple[str, ...]:
     return tuple(dict.fromkeys(out))
 
 
+def _primary_object(op: Operation) -> str | None:
+    """The specific resource an operation acts on: the last noun in its path.
+
+    Pairing taint on this, rather than on any shared noun, stops a broad
+    container like ``repo`` from linking every writer to every reader.
+    """
+    return op.objects[-1] if op.objects else None
+
+
 def find_links(api: Api) -> list[WriteReadLink]:
     writers: dict[str, list[Operation]] = {}
     readers: dict[str, list[Operation]] = {}
     for op in api.operations:
-        for obj in op.objects:
-            if _writes(op):
-                writers.setdefault(obj, []).append(op)
-            if _reads(op):
-                readers.setdefault(obj, []).append(op)
+        obj = _primary_object(op)
+        if obj is None:
+            continue
+        if _writes(op):
+            writers.setdefault(obj, []).append(op)
+        if _reads(op):
+            readers.setdefault(obj, []).append(op)
     links: list[WriteReadLink] = []
     for obj, ws in writers.items():
         rs = readers.get(obj, [])

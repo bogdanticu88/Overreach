@@ -16,7 +16,7 @@ def _api():
 
 def test_parses_all_operations():
     api = _api()
-    assert len(api.operations) == 4
+    assert len(api.operations) == 5
     assert api.by_key()["POST /repos/{owner}/{repo}/hooks"].op_id == "createHook"
 
 
@@ -41,13 +41,15 @@ def test_identity_change_detected():
     assert any(e.kind == EffectKind.CHANGE_IDENTITY for e in pw.effects)
 
 
-def test_write_read_link_on_issue():
+def test_write_read_link_on_comment():
+    # The comment body is written by one op and read by another; the link is
+    # keyed on the specific object (comment), not the container (issue).
     api = _api()
     links = find_links(api)
     objs = {lk.obj for lk in links}
-    assert "issue" in objs
-    issue_links = [lk for lk in links if lk.obj == "issue"]
-    assert any("body" in lk.free_text_fields for lk in issue_links)
+    assert "comment" in objs
+    comment_links = [lk for lk in links if lk.obj == "comment"]
+    assert any("body" in lk.free_text_fields for lk in comment_links)
 
 
 def test_external_ref_not_fetched():
