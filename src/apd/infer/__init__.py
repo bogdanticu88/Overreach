@@ -118,6 +118,11 @@ def uncertain_operations(api: Api, threshold: float = 0.6) -> list[Operation]:
     return out
 
 
-def infer_api(api: Api) -> Api:
+def infer_api(api: Api, *, refine: bool = True) -> Api:
+    """Run rule inference, then a refinement pass (offline by default)."""
     enriched = tuple(infer_operation(op) for op in api.operations)
+    if refine:
+        from apd.infer.refine import get_refiner
+        refiner = get_refiner()
+        enriched = tuple(refiner.refine(op) for op in enriched)
     return Api(api.title, api.version, enriched, api.source_hash, api.warnings)

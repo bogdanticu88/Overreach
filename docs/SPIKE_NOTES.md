@@ -41,10 +41,11 @@ Running on real specs immediately exposed problems that a tidy fixture hid:
    dangerous tool, with a count of how many untrusted entries reach it.
 3. **Mattermost paths sit at the top level**, not under `paths:`. The merge step
    now handles both layouts.
-4. **Lexical effect guesses are noisy.** `move_money` fires on words like
+4. **Lexical effect guesses are noisy.** `move_money` fired on words like
    "order" and "transfer" even on APIs with no payments (15 such findings on
-   each of Gitea and Mattermost). These carry low confidence (0.5) and need the
-   model pass, or a boundaries file, to settle. Left visible on purpose.
+   each of Gitea and Mattermost). The offline refinement pass now prunes money
+   effects with no commerce context, cutting these to 9 on Gitea and 3 on
+   Mattermost, and flags unbounded list reads as a cost signal.
 
 ## Honest limitations (v0.1)
 

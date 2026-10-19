@@ -98,6 +98,8 @@ def _terminal_outcome(op: Operation) -> tuple[Outcome, int, float] | None:
         elif e.kind == EffectKind.DELETE and any(
                 x.kind == EffectKind.IRREVERSIBLE for x in op.effects):
             out, impact = Outcome.DESTRUCTION, 4
+        # COST (unbounded list) is recorded as an effect and shown in profiling,
+        # but a single list is not an injection chain, so it is not a terminal.
         if out is not None and (best is None or impact > best[1]):
             best = (out, impact, e.confidence)
     return best

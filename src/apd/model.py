@@ -42,6 +42,7 @@ class EffectKind(str, Enum):
     MOVE_MONEY = "move_money"
     CHANGE_IDENTITY = "change_identity"  # email, password, token, membership
     IRREVERSIBLE = "irreversible"
+    COST = "cost"                  # can run up API or model spend (e.g. unbounded list)
 
 
 # Confidence is a plain float in [0, 1]. Declared facts are 1.0.
