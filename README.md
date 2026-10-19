@@ -34,7 +34,30 @@ pip install -e ".[dev]"
 apd profile <spec>                       # coverage statistics
 apd scan <spec>                          # find chains and ranked fixes
 apd scan <spec> --boundaries <file>      # scope findings to the agent's authority
+apd scan <spec> --sarif out.sarif        # SARIF for GitHub code scanning
+apd scan <spec> --html report.html       # a shareable HTML report
+apd scan <spec> --fail-on error          # non-zero exit for CI gating
 apd validate                             # run the reference API demo end to end
+```
+
+### What the demo shows
+
+`apd validate` scans the bundled reference API, a code host built to score
+well on agent-readiness linters, then proves chains by executing them:
+
+```
+Reference API: 2 finding(s) (scoped by the bundled boundaries file).
+
+[df301d8e0d43] data_theft: VALIDATED
+    An attacker writes text into body that the agent later reads at
+    GET .../comments. Following that text, the agent can exfiltrate data by
+    reaching POST .../hooks in 2 steps, each individually permitted.
+    proof: canary reached the attacker destination through the webhook
+
+[a3af9754ae4d] data_theft: VALIDATED
+    ... the agent can exfiltrate data by reaching GET .../contents/{path} ...
+    Boundary crossed: crosses tenant boundary: no ownership check for 'owner'.
+    proof: agent read another tenant's private file; no ownership check
 ```
 
 A boundaries file declares what the agent may do, which fields are untrusted,

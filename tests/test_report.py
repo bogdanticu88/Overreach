@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from apd.breaker import recommend
 from apd.chains import Chain, Evidence, Outcome, Step
-from apd.report import narrative, to_sarif
+from apd.report import narrative, to_html, to_sarif
 
 
 def _chain(outcome, impact, generic=False):
@@ -35,3 +36,24 @@ def test_narrative_is_short():
     text = narrative(_chain(Outcome.TAKEOVER, 5))
     assert "take over the account" in text
     assert text.count(".") <= 6
+
+
+def test_html_is_self_contained():
+    chains = [_chain(Outcome.DATA_THEFT, 5)]
+    html = to_html(chains, recommend(chains), "Demo API")
+    assert html.startswith("<!doctype html>")
+    assert "Demo API" in html
+    assert "data theft" in html
+    # No external assets.
+    assert "http://" not in html and "https://" not in html
+    assert "<script" not in html
+
+
+def test_html_escapes_content():
+    steps = (Step("GET /a<script>", "x"), Step("POST /b", "y"))
+    ch = Chain(steps=steps, source_op="GET /a<script>", source_field="body",
+               outcome=Outcome.DATA_THEFT, boundaries=("b",), impact=5,
+               plausibility=0.7, min_confidence=0.6)
+    html = to_html([ch], [], "T")
+    assert "<script>" not in html.replace("<script", "")  # the literal is escaped
+    assert "&lt;script&gt;" in html
