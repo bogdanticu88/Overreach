@@ -5,13 +5,13 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from apd.boundaries import Boundaries, load_text
-from apd.chains import find_chains
-from apd.infer import infer_api
-from apd.ingest import load_text as load_spec
-from apd.reference_api import app
+from overreach.boundaries import Boundaries, load_text
+from overreach.chains import find_chains
+from overreach.infer import infer_api
+from overreach.ingest import load_text as load_spec
+from overreach.reference_api import app
 
-REF_BND = Path(__file__).parent.parent / "src" / "apd" / "reference_api" / "boundaries.yaml"
+REF_BND = Path(__file__).parent.parent / "src" / "overreach" / "reference_api" / "boundaries.yaml"
 
 
 def _api():
@@ -75,9 +75,9 @@ def test_cross_tenant_read_detected_under_tenant_boundary():
 def test_cross_tenant_read_validates():
     from fastapi.testclient import TestClient
 
-    from apd.reference_api import app as refapp
-    from apd.reference_api import reset_state
-    from apd.replay import validate_cross_tenant_read
+    from overreach.reference_api import app as refapp
+    from overreach.reference_api import reset_state
+    from overreach.replay import validate_cross_tenant_read
     reset_state()
     res = validate_cross_tenant_read(TestClient(refapp))
     assert res.evidence.value == "validated"

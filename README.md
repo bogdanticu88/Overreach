@@ -1,4 +1,4 @@
-# Agent Attack Path Discovery (working name)
+# Overreach
 
 Finds chains of individually legitimate API operations that combine into a
 harmful outcome, says how strong the evidence for each is, and ranks the
@@ -31,18 +31,18 @@ controls that would break them.
 ```bash
 pip install -e ".[dev]"
 
-apd profile <spec>                       # coverage statistics
-apd scan <spec>                          # find chains and ranked fixes
-apd scan <spec> --boundaries <file>      # scope findings to the agent's authority
-apd scan <spec> --sarif out.sarif        # SARIF for GitHub code scanning
-apd scan <spec> --html report.html       # a shareable HTML report
-apd scan <spec> --fail-on error          # non-zero exit for CI gating
-apd validate                             # run the reference API demo end to end
+overreach profile <spec>                       # coverage statistics
+overreach scan <spec>                          # find chains and ranked fixes
+overreach scan <spec> --boundaries <file>      # scope findings to the agent's authority
+overreach scan <spec> --sarif out.sarif        # SARIF for GitHub code scanning
+overreach scan <spec> --html report.html       # a shareable HTML report
+overreach scan <spec> --fail-on error          # non-zero exit for CI gating
+overreach validate                             # run the reference API demo end to end
 ```
 
 ### What the demo shows
 
-`apd validate` scans the bundled reference API, a code host built to score
+`overreach validate` scans the bundled reference API, a code host built to score
 well on agent-readiness linters, then proves chains by executing them:
 
 ```
@@ -64,7 +64,7 @@ A boundaries file declares what the agent may do, which fields are untrusted,
 and which path parameter identifies a tenant. Supplying one scopes "any tool
 reachable" down to what the agent can actually touch, turns credible reach into
 specific findings, and labels the boundary each chain crosses. See
-`src/apd/reference_api/boundaries.yaml` for an example.
+`src/overreach/reference_api/boundaries.yaml` for an example.
 
 ## Safety
 
@@ -77,5 +77,5 @@ and reference depth. See `SECURITY.md`.
 ```bash
 pip install -e ".[dev]"
 python -m pytest -q
-python -m mypy src/apd
+python -m mypy src/overreach
 ```

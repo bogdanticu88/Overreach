@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from apd.model import Api, EffectKind, Operation
+from overreach.model import Api, EffectKind, Operation
 
 _FREE_TEXT_HINTS = ("body", "comment", "description", "text", "message",
                     "content", "note", "title", "name", "subject", "bio")

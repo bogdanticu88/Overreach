@@ -1,6 +1,6 @@
 """Second-pass effect refinement.
 
-Rule inference runs first (in ``apd.infer``). A refiner then revisits each
+Rule inference runs first (in ``overreach.infer``). A refiner then revisits each
 operation to improve precision. Two refiners ship:
 
   * ``OfflineRefiner`` (default): deterministic, no network. It prunes effects
@@ -18,7 +18,7 @@ from __future__ import annotations
 import re
 from typing import Protocol
 
-from apd.model import Confidence, Effect, EffectKind, Operation, Provenance
+from overreach.model import Confidence, Effect, EffectKind, Operation, Provenance
 
 _PLACEHOLDER_RE = re.compile(r"\{[^}]*\}")
 

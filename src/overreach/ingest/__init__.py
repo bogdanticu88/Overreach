@@ -14,7 +14,7 @@ from typing import Any
 
 import yaml
 
-from apd.model import Api, Field, Operation, Origin
+from overreach.model import Api, Field, Operation, Origin
 
 _HTTP_METHODS = ("get", "post", "put", "patch", "delete")
 _MAX_BYTES = 32 * 1024 * 1024

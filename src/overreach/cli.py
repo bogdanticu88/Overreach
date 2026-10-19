@@ -16,14 +16,14 @@ from pathlib import Path
 
 import yaml
 
-from apd import __version__
-from apd.breaker import recommend
-from apd.chains import find_chains
-from apd.infer import infer_api, uncertain_operations
-from apd.ingest import load_path, merge_docs
-from apd.model import Api, EffectKind
-from apd.report import chain_to_dict, narrative, option_to_dict
-from apd.taint import find_links
+from overreach import __version__
+from overreach.breaker import recommend
+from overreach.chains import find_chains
+from overreach.infer import infer_api, uncertain_operations
+from overreach.ingest import load_path, merge_docs
+from overreach.model import Api, EffectKind
+from overreach.report import chain_to_dict, narrative, option_to_dict
+from overreach.taint import find_links
 
 
 def _load(path: str) -> Api:
@@ -71,8 +71,8 @@ def _profile(api: Api) -> dict[str, object]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="apd", description=__doc__)
-    parser.add_argument("--version", action="version", version=f"apd {__version__}")
+    parser = argparse.ArgumentParser(prog="overreach", description=__doc__)
+    parser.add_argument("--version", action="version", version=f"overreach {__version__}")
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("profile", help="parse a spec and print coverage stats")
     p.add_argument("spec", help="path to an OpenAPI file or a directory of fragments")
@@ -111,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         api = infer_api(_load(args.spec))
         bnd = None
         if args.boundaries:
-            from apd.boundaries import load_path as load_boundaries
+            from overreach.boundaries import load_path as load_boundaries
             bnd = load_boundaries(args.boundaries)
         chains = find_chains(api, boundaries=bnd)
         top = chains[:args.top]
@@ -150,13 +150,13 @@ def main(argv: list[str] | None = None) -> int:
                     for ctl in o.controls:
                         print(f"    - {ctl.description}")
         if args.sarif:
-            from apd.report import to_sarif
+            from overreach.report import to_sarif
             with open(args.sarif, "w") as fh:
                 json.dump(to_sarif(chains), fh, indent=2)
             if not args.json:
                 print(f"\nSARIF written to {args.sarif}")
         if args.html:
-            from apd.report import to_html
+            from overreach.report import to_html
             with open(args.html, "w") as fh:
                 fh.write(to_html(top, options, api.title))
             if not args.json:
@@ -184,16 +184,16 @@ def _validate_demo() -> int:
 
     from importlib.resources import files
 
-    from apd.boundaries import load_text as load_boundaries
-    from apd.chains import find_chains
-    from apd.replay import validate_chain
-    from apd.reference_api import app, reset_state
+    from overreach.boundaries import load_text as load_boundaries
+    from overreach.chains import find_chains
+    from overreach.replay import validate_chain
+    from overreach.reference_api import app, reset_state
 
     reset_state()
     client = TestClient(app)
     spec = _json.dumps(client.get("/openapi.json").json())
     api = infer_api(_load_text(spec))
-    bnd_text = (files("apd.reference_api") / "boundaries.yaml").read_text()
+    bnd_text = (files("overreach.reference_api") / "boundaries.yaml").read_text()
     bnd = load_boundaries(bnd_text)
     chains = find_chains(api, boundaries=bnd)
     print(f"Reference API: {len(chains)} finding(s) "
@@ -212,7 +212,7 @@ def _validate_demo() -> int:
 
 
 def _load_text(text: str) -> Api:
-    from apd.ingest import load_text
+    from overreach.ingest import load_text
     return load_text(text)
 
 

@@ -14,7 +14,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 
-from apd.chains import Chain
+from overreach.chains import Chain
 
 # v0.1 uses a greedy weighted set cover. An exact ILP solver is a later
 # enhancement (see ADR 0003); greedy is optimal enough at this scale and keeps

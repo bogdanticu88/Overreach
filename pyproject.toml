@@ -1,28 +1,26 @@
 [project]
-name = "apd"
+name = "overreach-scan"
 version = "0.0.1"
-description = "Agent Attack Path Discovery: finds chains of legitimate API operations that reach a harmful outcome."
+description = "Overreach: find chains of legitimate API operations an AI agent can be led into, that combine into a harmful outcome."
 requires-python = ">=3.12"
 dependencies = ["PyYAML>=6.0", "networkx>=3.0"]
 
 [project.optional-dependencies]
-# The reference API and the validation harness need a web framework; the core
-# analysis does not, so these stay optional.
 demo = ["fastapi>=0.110", "httpx>=0.27"]
 dev = ["pytest", "mypy", "types-PyYAML", "fastapi>=0.110", "httpx>=0.27"]
+
+[project.scripts]
+overreach = "overreach.cli:main"
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-"apd.reference_api" = ["*.yaml"]
-
-[project.scripts]
-apd = "apd.cli:main"
-
-[tool.mypy]
-strict = true
-python_version = "3.12"
+"overreach.reference_api" = ["*.yaml"]
 
 [build-system]
 requires = ["setuptools>=68"]

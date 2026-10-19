@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 
-from apd.model import Api, Effect, EffectKind, Operation, Provenance
+from overreach.model import Api, Effect, EffectKind, Operation, Provenance
 
 # Verb hints found in path segments or operationIds.
 _DESTROY_WORDS = ("delete", "remove", "purge", "destroy", "revoke", "wipe")
@@ -123,7 +123,7 @@ def infer_api(api: Api, *, refine: bool = True) -> Api:
     """Run rule inference, then a refinement pass (offline by default)."""
     enriched = tuple(infer_operation(op) for op in api.operations)
     if refine:
-        from apd.infer.refine import get_refiner
+        from overreach.infer.refine import get_refiner
         refiner = get_refiner()
         enriched = tuple(refiner.refine(op) for op in enriched)
     return Api(api.title, api.version, enriched, api.source_hash, api.warnings)

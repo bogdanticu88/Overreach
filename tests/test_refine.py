@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from apd.infer import infer_api, infer_operation
-from apd.infer.refine import OfflineRefiner
-from apd.model import Api, EffectKind, Field, Operation, Origin
+from overreach.infer import infer_api, infer_operation
+from overreach.infer.refine import OfflineRefiner
+from overreach.model import Api, EffectKind, Field, Operation, Origin
 
 
 def _op(method, path, fields=()):

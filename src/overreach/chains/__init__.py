@@ -15,9 +15,9 @@ import hashlib
 from dataclasses import dataclass, field
 from enum import Enum
 
-from apd.boundaries import Boundaries
-from apd.model import Api, EffectKind, Operation
-from apd.taint import WriteReadLink, find_links
+from overreach.boundaries import Boundaries
+from overreach.model import Api, EffectKind, Operation
+from overreach.taint import WriteReadLink, find_links
 
 _MAX_DEPTH = 4            # bound on same-domain data-flow paths
 _MAX_CHAINS = 5000        # defensive cap on very large specs

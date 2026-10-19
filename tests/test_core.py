@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from apd.infer import infer_api
-from apd.ingest import load_path, load_text
-from apd.model import EffectKind, Provenance
-from apd.taint import find_links
+from overreach.infer import infer_api
+from overreach.ingest import load_path, load_text
+from overreach.model import EffectKind, Provenance
+from overreach.taint import find_links
 
 FIX = Path(__file__).parent / "fixtures" / "tiny.json"
 

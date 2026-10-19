@@ -10,6 +10,6 @@ Attacker-receiver endpoints (prefixed ``/_sink``) are excluded from the public
 OpenAPI schema; they stand in for an endpoint the attacker controls, used only
 so the validation harness can observe exfiltration.
 """
-from apd.reference_api.app import app, get_state, reset_state
+from overreach.reference_api.app import app, get_state, reset_state
 
 __all__ = ["app", "get_state", "reset_state"]
