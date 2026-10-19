@@ -33,8 +33,17 @@ jobs:
         # reports. In your own repo add `--fail-on error` to gate the build.
         run: |
           apd scan "$SPEC" --boundaries "$BOUNDARIES" --sarif apd.sarif
-      - name: Upload SARIF
+      - name: Save SARIF as an artifact
         if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apd-sarif
+          path: apd.sarif
+      - name: Upload to code scanning (optional)
+        # Needs GitHub Advanced Security on private repos; free on public ones.
+        # continue-on-error keeps the build green where it is not available.
+        if: always()
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: apd.sarif
