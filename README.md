@@ -1,6 +1,10 @@
-# Overreach
+<p align="center">
+  <img src="assets/overreach-logo.svg" alt="Overreach" width="420">
+</p>
 
-**Find out what your AI agents can be talked into doing with your APIs.**
+<p align="center"><strong>Find out what your AI agents can be talked into doing with your APIs.</strong></p>
+
+# Overreach
 
 Overreach reads an API, works out the ways an AI agent using it could be steered
 into harm by chaining together individually legitimate calls, says how strong
