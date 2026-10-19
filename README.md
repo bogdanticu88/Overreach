@@ -79,3 +79,11 @@ pip install -e ".[dev]"
 python -m pytest -q
 python -m mypy src/overreach
 ```
+
+## License
+
+Overreach is free software under the GNU AGPL-3.0 (see `LICENSE`). A separate
+commercial edition and hosted service are also offered. See `CONTRIBUTING.md`
+for how contributions are licensed.
+
+Copyright (C) 2026 Mihai-Bogdan Ticu.
