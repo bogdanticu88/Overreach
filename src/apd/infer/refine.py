@@ -37,6 +37,7 @@ _PAGINATION = frozenset((
 _IDENTITY_SPECIFIC = frozenset((
     "email", "password", "token", "secret", "role", "permission",
     "membership", "credential", "apikey", "2fa", "mfa",
+    "collaborator", "scheme", "promote", "demote", "transfer", "rename",
 ))
 _MODEL_MAX_CONFIDENCE: Confidence = 0.75
 

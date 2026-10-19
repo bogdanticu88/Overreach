@@ -1,0 +1,538 @@
+# gitea operation inventory (neutral: method, path, summary, tags)
+GET /admin/actions/jobs | Lists all jobs | tags: admin
+GET /admin/actions/runners | Get all runners | tags: admin
+POST /admin/actions/runners/registration-token | Get a global actions runner registration token | tags: admin
+GET /admin/actions/runners/{runner_id} | Get a global runner | tags: admin
+PATCH /admin/actions/runners/{runner_id} | Update a global runner | tags: admin
+DELETE /admin/actions/runners/{runner_id} | Delete a global runner | tags: admin
+GET /admin/actions/runs | Lists all runs | tags: admin
+GET /admin/cron | List cron tasks | tags: admin
+POST /admin/cron/{task} | Run cron task | tags: admin
+GET /admin/emails | List all emails | tags: admin
+GET /admin/emails/search | Search all emails | tags: admin
+GET /admin/hooks | List system's webhooks | tags: admin
+POST /admin/hooks | Create a hook | tags: admin
+GET /admin/hooks/{id} | Get a hook | tags: admin
+PATCH /admin/hooks/{id} | Update a hook | tags: admin
+DELETE /admin/hooks/{id} | Delete a hook | tags: admin
+GET /admin/orgs | List all organizations | tags: admin
+GET /admin/packages | List all packages | tags: admin
+GET /admin/unadopted | List unadopted repositories | tags: admin
+POST /admin/unadopted/{owner}/{repo} | Adopt unadopted files as a repository | tags: admin
+DELETE /admin/unadopted/{owner}/{repo} | Delete unadopted files | tags: admin
+GET /admin/users | Search users according filter conditions | tags: admin
+POST /admin/users | Create a user | tags: admin
+PATCH /admin/users/{username} | Edit an existing user | tags: admin
+DELETE /admin/users/{username} | Delete a user | tags: admin
+GET /admin/users/{username}/badges | List a user's badges | tags: admin
+POST /admin/users/{username}/badges | Add a badge to a user | tags: admin
+DELETE /admin/users/{username}/badges | Remove a badge from a user | tags: admin
+POST /admin/users/{username}/keys | Add a public key on behalf of a user | tags: admin
+DELETE /admin/users/{username}/keys/{id} | Delete a user's public key | tags: admin
+POST /admin/users/{username}/orgs | Create an organization | tags: admin
+POST /admin/users/{username}/rename | Rename a user | tags: admin
+POST /admin/users/{username}/repos | Create a repository on behalf of a user | tags: admin
+GET /gitignore/templates | Returns a list of all gitignore templates | tags: miscellaneous
+GET /gitignore/templates/{name} | Returns information about a gitignore template | tags: miscellaneous
+GET /label/templates | Returns a list of all label templates | tags: miscellaneous
+GET /label/templates/{name} | Returns all labels in a template | tags: miscellaneous
+GET /licenses | Returns a list of all license templates | tags: miscellaneous
+GET /licenses/{name} | Returns information about a license template | tags: miscellaneous
+POST /markdown | Render a markdown document as HTML | tags: miscellaneous
+POST /markdown/raw | Render raw markdown as HTML | tags: miscellaneous
+POST /markup | Render a markup document as HTML | tags: miscellaneous
+GET /notifications | List users's notification threads | tags: notification
+PUT /notifications | Mark notification threads as read, pinned or unread | tags: notification
+GET /notifications/new | Check if unread notifications exist | tags: notification
+GET /notifications/threads/{id} | Get notification thread by ID | tags: notification
+PATCH /notifications/threads/{id} | Mark notification thread as read by ID | tags: notification
+POST /org/{org}/repos | Create a repository in an organization | tags: organization
+GET /orgs | Get list of organizations | tags: organization
+POST /orgs | Create an organization | tags: organization
+GET /orgs/{org} | Get an organization | tags: organization
+PATCH /orgs/{org} | Edit an organization | tags: organization
+DELETE /orgs/{org} | Delete an organization | tags: organization
+GET /orgs/{org}/actions/jobs | Get org-level workflow jobs | tags: organization
+GET /orgs/{org}/actions/runners | Get org-level runners | tags: organization
+POST /orgs/{org}/actions/runners/registration-token | Get an organization's actions runner registration token | tags: organization
+GET /orgs/{org}/actions/runners/{runner_id} | Get an org-level runner | tags: organization
+PATCH /orgs/{org}/actions/runners/{runner_id} | Update an org-level runner | tags: organization
+DELETE /orgs/{org}/actions/runners/{runner_id} | Delete an org-level runner | tags: organization
+GET /orgs/{org}/actions/runs | Get org-level workflow runs | tags: organization
+GET /orgs/{org}/actions/secrets | List an organization's actions secrets | tags: organization
+PUT /orgs/{org}/actions/secrets/{secretname} | Create or Update a secret value in an organization | tags: organization
+DELETE /orgs/{org}/actions/secrets/{secretname} | Delete a secret in an organization | tags: organization
+GET /orgs/{org}/actions/variables | Get an org-level variables list | tags: organization
+GET /orgs/{org}/actions/variables/{variablename} | Get an org-level variable | tags: organization
+POST /orgs/{org}/actions/variables/{variablename} | Create an org-level variable | tags: organization
+PUT /orgs/{org}/actions/variables/{variablename} | Update an org-level variable | tags: organization
+DELETE /orgs/{org}/actions/variables/{variablename} | Delete an org-level variable | tags: organization
+GET /orgs/{org}/activities/feeds | List an organization's activity feeds | tags: organization
+POST /orgs/{org}/avatar | Update Avatar | tags: organization
+DELETE /orgs/{org}/avatar | Delete Avatar | tags: organization
+GET /orgs/{org}/blocks | List users blocked by the organization | tags: organization
+GET /orgs/{org}/blocks/{username} | Check if a user is blocked by the organization | tags: organization
+PUT /orgs/{org}/blocks/{username} | Block a user | tags: organization
+DELETE /orgs/{org}/blocks/{username} | Unblock a user | tags: organization
+GET /orgs/{org}/hooks | List an organization's webhooks | tags: organization
+POST /orgs/{org}/hooks | Create a hook | tags: organization
+GET /orgs/{org}/hooks/{id} | Get a hook | tags: organization
+PATCH /orgs/{org}/hooks/{id} | Update a hook | tags: organization
+DELETE /orgs/{org}/hooks/{id} | Delete a hook | tags: organization
+GET /orgs/{org}/labels | List an organization's labels | tags: organization
+POST /orgs/{org}/labels | Create a label for an organization | tags: organization
+GET /orgs/{org}/labels/{id} | Get a single label | tags: organization
+PATCH /orgs/{org}/labels/{id} | Update a label | tags: organization
+DELETE /orgs/{org}/labels/{id} | Delete a label | tags: organization
+GET /orgs/{org}/members | List an organization's members | tags: organization
+GET /orgs/{org}/members/{username} | Check if a user is a member of an organization | tags: organization
+DELETE /orgs/{org}/members/{username} | Remove a member from an organization | tags: organization
+GET /orgs/{org}/projects | List an organization's projects | tags: organization
+POST /orgs/{org}/projects | Create a project owned by an organization | tags: organization
+GET /orgs/{org}/projects/{id} | Get a project | tags: organization
+PATCH /orgs/{org}/projects/{id} | Edit a project | tags: organization
+DELETE /orgs/{org}/projects/{id} | Delete a project | tags: organization
+GET /orgs/{org}/projects/{id}/columns | List a project's columns | tags: organization
+POST /orgs/{org}/projects/{id}/columns | Create a column in a project | tags: organization
+POST /orgs/{org}/projects/{id}/columns/move | Reorder a project's columns | tags: organization
+GET /orgs/{org}/projects/{id}/columns/{column_id} | Get a project column | tags: organization
+PATCH /orgs/{org}/projects/{id}/columns/{column_id} | Edit a project column | tags: organization
+DELETE /orgs/{org}/projects/{id}/columns/{column_id} | Delete a project column | tags: organization
+POST /orgs/{org}/projects/{id}/columns/{column_id}/default | Set a project's default column | tags: organization
+GET /orgs/{org}/projects/{id}/columns/{column_id}/issues | List the issues in a project column | tags: organization
+POST /orgs/{org}/projects/{id}/columns/{column_id}/issues/{issue_id} | Add an issue to a project column | tags: organization
+DELETE /orgs/{org}/projects/{id}/columns/{column_id}/issues/{issue_id} | Remove an issue from a project column | tags: organization
+POST /orgs/{org}/projects/{id}/issues/{issue_id}/move | Move an issue between a project's columns | tags: organization
+GET /orgs/{org}/public_members | List an organization's public members | tags: organization
+GET /orgs/{org}/public_members/{username} | Check if a user is a public member of an organization | tags: organization
+PUT /orgs/{org}/public_members/{username} | Publicize a user's membership | tags: organization
+DELETE /orgs/{org}/public_members/{username} | Conceal a user's membership | tags: organization
+POST /orgs/{org}/rename | Rename an organization | tags: organization
+GET /orgs/{org}/repos | List an organization's repos | tags: organization
+POST /orgs/{org}/repos | Create a repository in an organization | tags: organization
+DELETE /orgs/{org}/repos | Delete all repositories in an organization | tags: organization
+GET /orgs/{org}/teams | List an organization's teams | tags: organization
+POST /orgs/{org}/teams | Create a team | tags: organization
+GET /orgs/{org}/teams/search | Search for teams within an organization | tags: organization
+GET /packages/{owner} | Gets all packages of an owner | tags: package
+GET /packages/{owner}/{type}/{name} | Gets all versions of a package | tags: package
+DELETE /packages/{owner}/{type}/{name} | Delete a package | tags: package
+GET /packages/{owner}/{type}/{name}/-/latest | Gets the latest version of a package | tags: package
+POST /packages/{owner}/{type}/{name}/-/link/{repo_name} | Link a package to a repository | tags: package
+POST /packages/{owner}/{type}/{name}/-/unlink | Unlink a package from a repository | tags: package
+GET /packages/{owner}/{type}/{name}/{version} | Gets a package | tags: package
+DELETE /packages/{owner}/{type}/{name}/{version} | Delete a package version | tags: package
+GET /packages/{owner}/{type}/{name}/{version}/files | Gets all files of a package | tags: package
+GET /repos/issues/search | Search for issues across the repositories that the user has access to | tags: issue
+POST /repos/migrate | Migrate a remote git repository | tags: repository
+GET /repos/search | Search for repositories | tags: repository
+GET /repos/{owner}/{repo} | Get a repository | tags: repository
+PATCH /repos/{owner}/{repo} | Edit a repository's properties. Only fields that are set will be changed. | tags: repository
+DELETE /repos/{owner}/{repo} | Delete a repository | tags: repository
+GET /repos/{owner}/{repo}/actions/artifacts | Lists all artifacts for a repository | tags: repository
+GET /repos/{owner}/{repo}/actions/artifacts/{artifact_id} | Gets a specific artifact for a workflow run | tags: repository
+DELETE /repos/{owner}/{repo}/actions/artifacts/{artifact_id} | Deletes a specific artifact for a workflow run | tags: repository
+GET /repos/{owner}/{repo}/actions/artifacts/{artifact_id}/zip | Downloads a specific artifact for a workflow run redirects to blob url | tags: repository
+GET /repos/{owner}/{repo}/actions/jobs | Lists all jobs for a repository | tags: repository
+GET /repos/{owner}/{repo}/actions/jobs/{job_id} | Gets a specific workflow job for a workflow run | tags: repository
+GET /repos/{owner}/{repo}/actions/jobs/{job_id}/logs | Downloads the job logs for a workflow run | tags: repository
+GET /repos/{owner}/{repo}/actions/runners | Get repo-level runners | tags: repository
+POST /repos/{owner}/{repo}/actions/runners/registration-token | Get a repository's actions runner registration token | tags: repository
+GET /repos/{owner}/{repo}/actions/runners/{runner_id} | Get a repo-level runner | tags: repository
+PATCH /repos/{owner}/{repo}/actions/runners/{runner_id} | Update a repo-level runner | tags: repository
+DELETE /repos/{owner}/{repo}/actions/runners/{runner_id} | Delete a repo-level runner | tags: repository
+GET /repos/{owner}/{repo}/actions/runs | Lists all runs for a repository run | tags: repository
+GET /repos/{owner}/{repo}/actions/runs/{run} | Gets a specific workflow run | tags: repository
+DELETE /repos/{owner}/{repo}/actions/runs/{run} | Delete a workflow run | tags: repository
+POST /repos/{owner}/{repo}/actions/runs/{run}/approve | Approve a workflow run that requires approval | tags: repository
+GET /repos/{owner}/{repo}/actions/runs/{run}/artifacts | Lists all artifacts for a repository run | tags: repository
+GET /repos/{owner}/{repo}/actions/runs/{run}/attempts/{attempt} | Gets a specific workflow run attempt | tags: repository
+GET /repos/{owner}/{repo}/actions/runs/{run}/attempts/{attempt}/jobs | Lists all jobs for a workflow run attempt | tags: repository
+POST /repos/{owner}/{repo}/actions/runs/{run}/cancel | Cancel a workflow run and its jobs | tags: repository
+POST /repos/{owner}/{repo}/actions/runs/{run}/force-cancel | Force-cancel a workflow run | tags: repository
+GET /repos/{owner}/{repo}/actions/runs/{run}/jobs | Lists all jobs for a workflow run | tags: repository
+POST /repos/{owner}/{repo}/actions/runs/{run}/jobs/{job_id}/rerun | Reruns a specific workflow job in a run | tags: repository
+GET /repos/{owner}/{repo}/actions/runs/{run}/logs | Download workflow run logs as archive | tags: repository
+POST /repos/{owner}/{repo}/actions/runs/{run}/rerun | Reruns an entire workflow run | tags: repository
+POST /repos/{owner}/{repo}/actions/runs/{run}/rerun-failed-jobs | Reruns all failed jobs in a workflow run | tags: repository
+GET /repos/{owner}/{repo}/actions/secrets | List a repo's actions secrets | tags: repository
+PUT /repos/{owner}/{repo}/actions/secrets/{secretname} | Create or Update a secret value in a repository | tags: repository
+DELETE /repos/{owner}/{repo}/actions/secrets/{secretname} | Delete a secret in a repository | tags: repository
+GET /repos/{owner}/{repo}/actions/tasks | List a repository's action tasks | tags: repository
+GET /repos/{owner}/{repo}/actions/variables | Get repo-level variables list | tags: repository
+GET /repos/{owner}/{repo}/actions/variables/{variablename} | Get a repo-level variable | tags: repository
+POST /repos/{owner}/{repo}/actions/variables/{variablename} | Create a repo-level variable | tags: repository
+PUT /repos/{owner}/{repo}/actions/variables/{variablename} | Update a repo-level variable | tags: repository
+DELETE /repos/{owner}/{repo}/actions/variables/{variablename} | Delete a repo-level variable | tags: repository
+GET /repos/{owner}/{repo}/actions/workflows | List repository workflows | tags: repository
+GET /repos/{owner}/{repo}/actions/workflows/{workflow_id} | Get a workflow | tags: repository
+PUT /repos/{owner}/{repo}/actions/workflows/{workflow_id}/disable | Disable a workflow | tags: repository
+POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches | Create a workflow dispatch event | tags: repository
+PUT /repos/{owner}/{repo}/actions/workflows/{workflow_id}/enable | Enable a workflow | tags: repository
+GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs | List runs for a workflow | tags: repository
+GET /repos/{owner}/{repo}/activities/feeds | List a repository's activity feeds | tags: repository
+GET /repos/{owner}/{repo}/archive/{archive} | Get an archive of a repository | tags: repository
+GET /repos/{owner}/{repo}/assignees | Return all users that have write access and can be assigned to issues | tags: repository
+GET /repos/{owner}/{repo}/assignees/{assignee} | Check if a user can be assigned to issues in a repository | tags: repository
+POST /repos/{owner}/{repo}/avatar | Update avatar | tags: repository
+DELETE /repos/{owner}/{repo}/avatar | Delete avatar | tags: repository
+GET /repos/{owner}/{repo}/branch_protections | List branch protections for a repository | tags: repository
+POST /repos/{owner}/{repo}/branch_protections | Create a branch protections for a repository | tags: repository
+POST /repos/{owner}/{repo}/branch_protections/priority | Update the priorities of branch protections for a repository. | tags: repository
+GET /repos/{owner}/{repo}/branch_protections/{name} | Get a specific branch protection for the repository | tags: repository
+PATCH /repos/{owner}/{repo}/branch_protections/{name} | Edit a branch protections for a repository. Only fields that are set will be changed | tags: repository
+DELETE /repos/{owner}/{repo}/branch_protections/{name} | Delete a specific branch protection for the repository | tags: repository
+GET /repos/{owner}/{repo}/branches | List a repository's branches | tags: repository
+POST /repos/{owner}/{repo}/branches | Create a branch | tags: repository
+GET /repos/{owner}/{repo}/branches/{branch} | Retrieve a specific branch from a repository, including its effective branch protection | tags: repository
+PUT /repos/{owner}/{repo}/branches/{branch} | Update a branch reference to a new commit | tags: repository
+PATCH /repos/{owner}/{repo}/branches/{branch} | Rename a branch | tags: repository
+DELETE /repos/{owner}/{repo}/branches/{branch} | Delete a specific branch from a repository | tags: repository
+GET /repos/{owner}/{repo}/collaborators | List a repository's collaborators | tags: repository
+GET /repos/{owner}/{repo}/collaborators/{collaborator} | Check if a user is a collaborator of a repository | tags: repository
+PUT /repos/{owner}/{repo}/collaborators/{collaborator} | Add or Update a collaborator to a repository | tags: repository
+DELETE /repos/{owner}/{repo}/collaborators/{collaborator} | Delete a collaborator from a repository | tags: repository
+GET /repos/{owner}/{repo}/collaborators/{collaborator}/permission | Get repository permissions for a user | tags: repository
+GET /repos/{owner}/{repo}/commits | Get a list of all commits from a repository | tags: repository
+GET /repos/{owner}/{repo}/commits/{ref}/status | Get a commit's combined status, by branch/tag/commit reference | tags: repository
+GET /repos/{owner}/{repo}/commits/{ref}/statuses | Get a commit's statuses, by branch/tag/commit reference | tags: repository
+GET /repos/{owner}/{repo}/commits/{sha}/pull | Get the merged pull request of the commit | tags: repository
+GET /repos/{owner}/{repo}/compare/{basehead} | Get commit comparison information | tags: repository
+GET /repos/{owner}/{repo}/contents | Gets the metadata of all the entries of the root dir. | tags: repository
+POST /repos/{owner}/{repo}/contents | Modify multiple files in a repository | tags: repository
+GET /repos/{owner}/{repo}/contents-ext/{filepath} | The extended "contents" API, to get file metadata and/or content, or list a directory. | tags: repository
+GET /repos/{owner}/{repo}/contents/{filepath} | Gets the metadata and contents (if a file) of an entry in a repository, or a list of entries if a dir. | tags: repository
+POST /repos/{owner}/{repo}/contents/{filepath} | Create a file in a repository | tags: repository
+PUT /repos/{owner}/{repo}/contents/{filepath} | Update a file in a repository if SHA is set, or create the file if SHA is not set | tags: repository
+DELETE /repos/{owner}/{repo}/contents/{filepath} | Delete a file in a repository | tags: repository
+POST /repos/{owner}/{repo}/diffpatch | Apply diff patch to repository | tags: repository
+GET /repos/{owner}/{repo}/editorconfig/{filepath} | Get the EditorConfig definitions of a file in a repository | tags: repository
+GET /repos/{owner}/{repo}/file-contents | Get the metadata and contents of requested files | tags: repository
+POST /repos/{owner}/{repo}/file-contents | Get the metadata and contents of requested files | tags: repository
+GET /repos/{owner}/{repo}/forks | List a repository's forks | tags: repository
+POST /repos/{owner}/{repo}/forks | Fork a repository | tags: repository
+GET /repos/{owner}/{repo}/git/blobs/{sha} | Gets the blob of a repository. | tags: repository
+GET /repos/{owner}/{repo}/git/commits/{sha} | Get a single commit from a repository, it has a GitHub-compatible alias "/repos/{owner}/{repo}/commits/{ref}" | tags: repository
+GET /repos/{owner}/{repo}/git/commits/{sha}.{diffType} | Get a commit's diff or patch | tags: repository
+GET /repos/{owner}/{repo}/git/notes/{sha} | Get a note corresponding to a single commit from a repository | tags: repository
+GET /repos/{owner}/{repo}/git/refs | Get specified ref or filtered repository's refs | tags: repository
+GET /repos/{owner}/{repo}/git/refs/{ref} | Get specified ref or filtered repository's refs | tags: repository
+GET /repos/{owner}/{repo}/git/tags/{sha} | Gets the tag object of an annotated tag (not lightweight tags) | tags: repository
+GET /repos/{owner}/{repo}/git/trees/{sha} | Gets the tree of a repository. | tags: repository
+GET /repos/{owner}/{repo}/hooks | List the hooks in a repository | tags: repository
+POST /repos/{owner}/{repo}/hooks | Create a hook | tags: repository
+GET /repos/{owner}/{repo}/hooks/git | List the Git hooks in a repository | tags: repository
+GET /repos/{owner}/{repo}/hooks/git/{id} | Get a Git hook | tags: repository
+PATCH /repos/{owner}/{repo}/hooks/git/{id} | Edit a Git hook in a repository | tags: repository
+DELETE /repos/{owner}/{repo}/hooks/git/{id} | Delete a Git hook in a repository | tags: repository
+GET /repos/{owner}/{repo}/hooks/{id} | Get a hook | tags: repository
+PATCH /repos/{owner}/{repo}/hooks/{id} | Edit a hook in a repository | tags: repository
+DELETE /repos/{owner}/{repo}/hooks/{id} | Delete a hook in a repository | tags: repository
+POST /repos/{owner}/{repo}/hooks/{id}/tests | Test a push webhook | tags: repository
+GET /repos/{owner}/{repo}/issue_config | Returns the issue config for a repo | tags: repository
+GET /repos/{owner}/{repo}/issue_config/validate | Returns the validation information for a issue config | tags: repository
+GET /repos/{owner}/{repo}/issue_templates | Get available issue templates for a repository | tags: repository
+GET /repos/{owner}/{repo}/issues | List a repository's issues | tags: issue
+POST /repos/{owner}/{repo}/issues | Create an issue. If using deadline only the date will be taken into account, and time of day ignored. | tags: issue
+GET /repos/{owner}/{repo}/issues/comments | List all comments in a repository | tags: issue
+GET /repos/{owner}/{repo}/issues/comments/{id} | Get a comment | tags: issue
+PATCH /repos/{owner}/{repo}/issues/comments/{id} | Edit a comment | tags: issue
+DELETE /repos/{owner}/{repo}/issues/comments/{id} | Delete a comment | tags: issue
+GET /repos/{owner}/{repo}/issues/comments/{id}/assets | List comment's attachments | tags: issue
+POST /repos/{owner}/{repo}/issues/comments/{id}/assets | Create a comment attachment | tags: issue
+GET /repos/{owner}/{repo}/issues/comments/{id}/assets/{attachment_id} | Get a comment attachment | tags: issue
+PATCH /repos/{owner}/{repo}/issues/comments/{id}/assets/{attachment_id} | Edit a comment attachment | tags: issue
+DELETE /repos/{owner}/{repo}/issues/comments/{id}/assets/{attachment_id} | Delete a comment attachment | tags: issue
+GET /repos/{owner}/{repo}/issues/comments/{id}/reactions | Get a list of reactions from a comment of an issue | tags: issue
+POST /repos/{owner}/{repo}/issues/comments/{id}/reactions | Add a reaction to a comment of an issue | tags: issue
+DELETE /repos/{owner}/{repo}/issues/comments/{id}/reactions | Remove a reaction from a comment of an issue | tags: issue
+GET /repos/{owner}/{repo}/issues/pinned | List a repo's pinned issues | tags: repository
+GET /repos/{owner}/{repo}/issues/{index} | Get an issue | tags: issue
+PATCH /repos/{owner}/{repo}/issues/{index} | Edit an issue. If using deadline only the date will be taken into account, and time of day ignored. | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index} | Delete an issue | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/assets | List issue's attachments | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/assets | Create an issue attachment | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/assets/{attachment_id} | Get an issue attachment | tags: issue
+PATCH /repos/{owner}/{repo}/issues/{index}/assets/{attachment_id} | Edit an issue attachment | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/assets/{attachment_id} | Delete an issue attachment | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/assignees | Add assignees to an issue | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/assignees | Remove assignees from an issue | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/assignees/{assignee} | Check if a user can be assigned to an issue | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/blocks | List issues that are blocked by this issue | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/blocks | Block the issue given in the body by the issue in path | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/blocks | Unblock the issue given in the body by the issue in path | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/comments | List all comments on an issue | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/comments | Add a comment to an issue | tags: issue
+PATCH /repos/{owner}/{repo}/issues/{index}/comments/{id} | Edit a comment | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/comments/{id} | Delete a comment | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/deadline | Set an issue deadline. If set to null, the deadline is deleted. If using deadline only the date will be taken into account, and time of day ignored. | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/dependencies | List an issue's dependencies, i.e all issues that block this issue. | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/dependencies | Make the issue in the url depend on the issue in the form. | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/dependencies | Remove an issue dependency | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/labels | Get an issue's labels | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/labels | Add a label to an issue | tags: issue
+PUT /repos/{owner}/{repo}/issues/{index}/labels | Replace an issue's labels | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/labels | Remove all labels from an issue | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/labels/{id} | Remove a label from an issue | tags: issue
+PUT /repos/{owner}/{repo}/issues/{index}/lock | Lock an issue | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/lock | Unlock an issue | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/pin | Pin an Issue | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/pin | Unpin an Issue | tags: issue
+PATCH /repos/{owner}/{repo}/issues/{index}/pin/{position} | Moves the Pin to the given Position | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/reactions | Get a list reactions of an issue | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/reactions | Add a reaction to an issue | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/reactions | Remove a reaction from an issue | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/stopwatch/delete | Delete an issue's existing stopwatch. | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/stopwatch/start | Start stopwatch on an issue. | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/stopwatch/stop | Stop an issue's existing stopwatch. | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/subscriptions | Get users who subscribed on an issue. | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/subscriptions/check | Check if user is subscribed to an issue | tags: issue
+PUT /repos/{owner}/{repo}/issues/{index}/subscriptions/{user} | Subscribe user to issue | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/subscriptions/{user} | Unsubscribe user from issue | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/timeline | List all comments and events on an issue | tags: issue
+GET /repos/{owner}/{repo}/issues/{index}/times | List an issue's tracked times | tags: issue
+POST /repos/{owner}/{repo}/issues/{index}/times | Add tracked time to a issue | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/times | Reset a tracked time of an issue | tags: issue
+DELETE /repos/{owner}/{repo}/issues/{index}/times/{id} | Delete specific tracked time | tags: issue
+GET /repos/{owner}/{repo}/keys | List a repository's keys | tags: repository
+POST /repos/{owner}/{repo}/keys | Add a key to a repository | tags: repository
+POST /repos/{owner}/{repo}/keys/tokens | Add a deploy token to a repository, it authenticates git over HTTPS | tags: repository
+GET /repos/{owner}/{repo}/keys/{id} | Get a repository's key by id | tags: repository
+DELETE /repos/{owner}/{repo}/keys/{id} | Delete a key from a repository | tags: repository
+GET /repos/{owner}/{repo}/labels | Get all of a repository's labels | tags: issue
+POST /repos/{owner}/{repo}/labels | Create a label | tags: issue
+GET /repos/{owner}/{repo}/labels/{id} | Get a single label | tags: issue
+PATCH /repos/{owner}/{repo}/labels/{id} | Update a label | tags: issue
+DELETE /repos/{owner}/{repo}/labels/{id} | Delete a label | tags: issue
+GET /repos/{owner}/{repo}/languages | Get languages and number of bytes of code written | tags: repository
+GET /repos/{owner}/{repo}/licenses | Get repo licenses | tags: repository
+GET /repos/{owner}/{repo}/media/{filepath} | Get a file or it's LFS object from a repository | tags: repository
+POST /repos/{owner}/{repo}/merge-upstream | Merge a branch from upstream | tags: repository
+GET /repos/{owner}/{repo}/milestones | Get all of a repository's opened milestones | tags: issue
+POST /repos/{owner}/{repo}/milestones | Create a milestone | tags: issue
+GET /repos/{owner}/{repo}/milestones/{id} | Get a milestone | tags: issue
+PATCH /repos/{owner}/{repo}/milestones/{id} | Update a milestone | tags: issue
+DELETE /repos/{owner}/{repo}/milestones/{id} | Delete a milestone | tags: issue
+POST /repos/{owner}/{repo}/mirror-sync | Sync a mirrored repository | tags: repository
+GET /repos/{owner}/{repo}/new_pin_allowed | Returns if new Issue Pins are allowed | tags: repository
+GET /repos/{owner}/{repo}/notifications | List users's notification threads on a specific repo | tags: notification
+PUT /repos/{owner}/{repo}/notifications | Mark notification threads as read, pinned or unread on a specific repo | tags: notification
+GET /repos/{owner}/{repo}/projects | List a repository's projects | tags: repository
+POST /repos/{owner}/{repo}/projects | Create a project owned by a repository | tags: repository
+GET /repos/{owner}/{repo}/projects/{id} | Get a project | tags: repository
+PATCH /repos/{owner}/{repo}/projects/{id} | Edit a project | tags: repository
+DELETE /repos/{owner}/{repo}/projects/{id} | Delete a project | tags: repository
+GET /repos/{owner}/{repo}/projects/{id}/columns | List a project's columns | tags: repository
+POST /repos/{owner}/{repo}/projects/{id}/columns | Create a column in a project | tags: repository
+POST /repos/{owner}/{repo}/projects/{id}/columns/move | Reorder a project's columns | tags: repository
+GET /repos/{owner}/{repo}/projects/{id}/columns/{column_id} | Get a project column | tags: repository
+PATCH /repos/{owner}/{repo}/projects/{id}/columns/{column_id} | Edit a project column | tags: repository
+DELETE /repos/{owner}/{repo}/projects/{id}/columns/{column_id} | Delete a project column | tags: repository
+POST /repos/{owner}/{repo}/projects/{id}/columns/{column_id}/default | Set a project's default column | tags: repository
+GET /repos/{owner}/{repo}/projects/{id}/columns/{column_id}/issues | List the issues in a project column | tags: repository
+POST /repos/{owner}/{repo}/projects/{id}/columns/{column_id}/issues/{issue_id} | Add an issue to a project column | tags: repository
+DELETE /repos/{owner}/{repo}/projects/{id}/columns/{column_id}/issues/{issue_id} | Remove an issue from a project column | tags: repository
+POST /repos/{owner}/{repo}/projects/{id}/issues/{issue_id}/move | Move an issue between a project's columns | tags: repository
+GET /repos/{owner}/{repo}/pulls | List a repo's pull requests | tags: repository
+POST /repos/{owner}/{repo}/pulls | Create a pull request | tags: repository
+POST /repos/{owner}/{repo}/pulls/comments/{id}/resolve | Resolve a pull request review comment | tags: repository
+POST /repos/{owner}/{repo}/pulls/comments/{id}/unresolve | Unresolve a pull request review comment | tags: repository
+GET /repos/{owner}/{repo}/pulls/pinned | List a repo's pinned pull requests | tags: repository
+GET /repos/{owner}/{repo}/pulls/{base}/{head} | Get a pull request by base and head | tags: repository
+GET /repos/{owner}/{repo}/pulls/{index} | Get a pull request | tags: repository
+PATCH /repos/{owner}/{repo}/pulls/{index} | Update a pull request. If using deadline only the date will be taken into account, and time of day ignored. | tags: repository
+GET /repos/{owner}/{repo}/pulls/{index}.{diffType} | Get a pull request diff or patch | tags: repository
+POST /repos/{owner}/{repo}/pulls/{index}/comments/{id}/replies | Reply to a pull request review comment | tags: repository
+GET /repos/{owner}/{repo}/pulls/{index}/commits | Get commits for a pull request | tags: repository
+GET /repos/{owner}/{repo}/pulls/{index}/files | Get changed files for a pull request | tags: repository
+GET /repos/{owner}/{repo}/pulls/{index}/merge | Check if a pull request has been merged | tags: repository
+POST /repos/{owner}/{repo}/pulls/{index}/merge | Merge a pull request | tags: repository
+DELETE /repos/{owner}/{repo}/pulls/{index}/merge | Cancel the scheduled auto merge for the given pull request | tags: repository
+POST /repos/{owner}/{repo}/pulls/{index}/requested_reviewers | create review requests for a pull request | tags: repository
+DELETE /repos/{owner}/{repo}/pulls/{index}/requested_reviewers | cancel review requests for a pull request | tags: repository
+GET /repos/{owner}/{repo}/pulls/{index}/reviews | List all reviews for a pull request | tags: repository
+POST /repos/{owner}/{repo}/pulls/{index}/reviews | Create a review to a pull request | tags: repository
+GET /repos/{owner}/{repo}/pulls/{index}/reviews/{id} | Get a specific review for a pull request | tags: repository
+POST /repos/{owner}/{repo}/pulls/{index}/reviews/{id} | Submit a pending review to a pull request | tags: repository
+DELETE /repos/{owner}/{repo}/pulls/{index}/reviews/{id} | Delete a specific review from a pull request | tags: repository
+GET /repos/{owner}/{repo}/pulls/{index}/reviews/{id}/comments | Get a specific review for a pull request | tags: repository
+POST /repos/{owner}/{repo}/pulls/{index}/reviews/{id}/dismissals | Dismiss a review for a pull request | tags: repository
+POST /repos/{owner}/{repo}/pulls/{index}/reviews/{id}/undismissals | Cancel to dismiss a review for a pull request | tags: repository
+POST /repos/{owner}/{repo}/pulls/{index}/update | Merge PR's baseBranch into headBranch | tags: repository
+GET /repos/{owner}/{repo}/push_mirrors | Get all push mirrors of the repository | tags: repository
+POST /repos/{owner}/{repo}/push_mirrors | add a push mirror to the repository | tags: repository
+POST /repos/{owner}/{repo}/push_mirrors-sync | Sync all push mirrored repository | tags: repository
+GET /repos/{owner}/{repo}/push_mirrors/{name} | Get push mirror of the repository by remoteName | tags: repository
+DELETE /repos/{owner}/{repo}/push_mirrors/{name} | deletes a push mirror from a repository by remoteName | tags: repository
+GET /repos/{owner}/{repo}/raw/{filepath} | Get a file from a repository | tags: repository
+GET /repos/{owner}/{repo}/releases | List a repo's releases | tags: repository
+POST /repos/{owner}/{repo}/releases | Create a release | tags: repository
+GET /repos/{owner}/{repo}/releases/latest | Gets the most recent non-prerelease, non-draft release of a repository, sorted by created_at | tags: repository
+GET /repos/{owner}/{repo}/releases/tags/{tag} | Get a release by tag name | tags: repository
+DELETE /repos/{owner}/{repo}/releases/tags/{tag} | Delete a release by tag name | tags: repository
+GET /repos/{owner}/{repo}/releases/{id} | Get a release | tags: repository
+PATCH /repos/{owner}/{repo}/releases/{id} | Update a release | tags: repository
+DELETE /repos/{owner}/{repo}/releases/{id} | Delete a release | tags: repository
+GET /repos/{owner}/{repo}/releases/{id}/assets | List release's attachments | tags: repository
+POST /repos/{owner}/{repo}/releases/{id}/assets | Create a release attachment | tags: repository
+GET /repos/{owner}/{repo}/releases/{id}/assets/{attachment_id} | Get a release attachment | tags: repository
+PATCH /repos/{owner}/{repo}/releases/{id}/assets/{attachment_id} | Edit a release attachment | tags: repository
+DELETE /repos/{owner}/{repo}/releases/{id}/assets/{attachment_id} | Delete a release attachment | tags: repository
+GET /repos/{owner}/{repo}/reviewers | Return all users that can be requested to review in this repo | tags: repository
+GET /repos/{owner}/{repo}/signing-key.gpg | Get signing-key.gpg for given repository | tags: repository
+GET /repos/{owner}/{repo}/signing-key.pub | Get signing-key.pub for given repository | tags: repository
+GET /repos/{owner}/{repo}/stargazers | List a repo's stargazers | tags: repository
+GET /repos/{owner}/{repo}/statuses/{sha} | Get a commit's statuses | tags: repository
+POST /repos/{owner}/{repo}/statuses/{sha} | Create a commit status | tags: repository
+GET /repos/{owner}/{repo}/subscribers | List a repo's watchers | tags: repository
+GET /repos/{owner}/{repo}/subscription | Check if the current user is watching a repo | tags: repository
+PUT /repos/{owner}/{repo}/subscription | Watch a repo | tags: repository
+DELETE /repos/{owner}/{repo}/subscription | Unwatch a repo | tags: repository
+GET /repos/{owner}/{repo}/tag_protections | List tag protections for a repository | tags: repository
+POST /repos/{owner}/{repo}/tag_protections | Create a tag protections for a repository | tags: repository
+GET /repos/{owner}/{repo}/tag_protections/{id} | Get a specific tag protection for the repository | tags: repository
+PATCH /repos/{owner}/{repo}/tag_protections/{id} | Edit a tag protections for a repository. Only fields that are set will be changed | tags: repository
+DELETE /repos/{owner}/{repo}/tag_protections/{id} | Delete a specific tag protection for the repository | tags: repository
+GET /repos/{owner}/{repo}/tags | List a repository's tags | tags: repository
+POST /repos/{owner}/{repo}/tags | Create a new git tag in a repository | tags: repository
+GET /repos/{owner}/{repo}/tags/{tag} | Get the tag of a repository by tag name | tags: repository
+DELETE /repos/{owner}/{repo}/tags/{tag} | Delete a repository's tag by name | tags: repository
+GET /repos/{owner}/{repo}/teams | List a repository's teams | tags: repository
+GET /repos/{owner}/{repo}/teams/{team} | Check if a team is assigned to a repository | tags: repository
+PUT /repos/{owner}/{repo}/teams/{team} | Add a team to a repository | tags: repository
+DELETE /repos/{owner}/{repo}/teams/{team} | Delete a team from a repository | tags: repository
+GET /repos/{owner}/{repo}/times | List a repo's tracked times | tags: repository
+GET /repos/{owner}/{repo}/times/{user} | List a user's tracked times in a repo | tags: repository
+GET /repos/{owner}/{repo}/topics | Get list of topics that a repository has | tags: repository
+PUT /repos/{owner}/{repo}/topics | Replace list of topics for a repository | tags: repository
+PUT /repos/{owner}/{repo}/topics/{topic} | Add a topic to a repository | tags: repository
+DELETE /repos/{owner}/{repo}/topics/{topic} | Delete a topic from a repository | tags: repository
+POST /repos/{owner}/{repo}/transfer | Transfer a repo ownership | tags: repository
+POST /repos/{owner}/{repo}/transfer/accept | Accept a repo transfer | tags: repository
+POST /repos/{owner}/{repo}/transfer/reject | Reject a repo transfer | tags: repository
+POST /repos/{owner}/{repo}/wiki/new | Create a wiki page | tags: repository
+GET /repos/{owner}/{repo}/wiki/page/{pageName} | Get a wiki page | tags: repository
+PATCH /repos/{owner}/{repo}/wiki/page/{pageName} | Edit a wiki page | tags: repository
+DELETE /repos/{owner}/{repo}/wiki/page/{pageName} | Delete a wiki page | tags: repository
+GET /repos/{owner}/{repo}/wiki/pages | Get all wiki pages | tags: repository
+GET /repos/{owner}/{repo}/wiki/revisions/{pageName} | Get revisions of a wiki page | tags: repository
+POST /repos/{template_owner}/{template_repo}/generate | Create a repository using a template | tags: repository
+GET /repositories/{id} | Get a repository by id | tags: repository
+GET /settings/api | Get instance's global settings for api | tags: settings
+GET /settings/attachment | Get instance's global settings for Attachment | tags: settings
+GET /settings/repository | Get instance's global settings for repositories | tags: settings
+GET /settings/ui | Get instance's global settings for ui | tags: settings
+GET /signing-key.gpg | Get default signing-key.gpg | tags: miscellaneous
+GET /signing-key.pub | Get default signing-key.pub | tags: miscellaneous
+GET /teams/{id} | Get a team | tags: organization
+PATCH /teams/{id} | Edit a team | tags: organization
+DELETE /teams/{id} | Delete a team | tags: organization
+GET /teams/{id}/activities/feeds | List a team's activity feeds | tags: organization
+GET /teams/{id}/members | List a team's members | tags: organization
+GET /teams/{id}/members/{username} | List a particular member of team | tags: organization
+PUT /teams/{id}/members/{username} | Add a team member | tags: organization
+DELETE /teams/{id}/members/{username} | Remove a team member | tags: organization
+GET /teams/{id}/repos | List a team's repos | tags: organization
+GET /teams/{id}/repos/{org}/{repo} | List a particular repo of team | tags: organization
+PUT /teams/{id}/repos/{org}/{repo} | Add a repository to a team | tags: organization
+DELETE /teams/{id}/repos/{org}/{repo} | Remove a repository from a team | tags: organization
+GET /token | Get the currently authenticated token | tags: miscellaneous
+DELETE /token | Delete the currently authenticated token | tags: miscellaneous
+GET /topics/search | search topics via keyword | tags: repository
+GET /user | Get the authenticated user | tags: user
+GET /user/actions/jobs | Get workflow jobs | tags: user
+GET /user/actions/runners | Get user-level runners | tags: user
+POST /user/actions/runners/registration-token | Get a user's actions runner registration token | tags: user
+GET /user/actions/runners/{runner_id} | Get a user-level runner | tags: user
+PATCH /user/actions/runners/{runner_id} | Update a user-level runner | tags: user
+DELETE /user/actions/runners/{runner_id} | Delete a user-level runner | tags: user
+GET /user/actions/runs | Get workflow runs | tags: user
+PUT /user/actions/secrets/{secretname} | Create or Update a secret value in a user scope | tags: user
+DELETE /user/actions/secrets/{secretname} | Delete a secret in a user scope | tags: user
+GET /user/actions/variables | Get the user-level list of variables which is created by current doer | tags: user
+GET /user/actions/variables/{variablename} | Get a user-level variable which is created by current doer | tags: user
+POST /user/actions/variables/{variablename} | Create a user-level variable | tags: user
+PUT /user/actions/variables/{variablename} | Update a user-level variable which is created by current doer | tags: user
+DELETE /user/actions/variables/{variablename} | Delete a user-level variable which is created by current doer | tags: user
+GET /user/applications/oauth2 | List the authenticated user's oauth2 applications | tags: user
+POST /user/applications/oauth2 | creates a new OAuth2 application | tags: user
+GET /user/applications/oauth2/{id} | get an OAuth2 Application | tags: user
+PATCH /user/applications/oauth2/{id} | update an OAuth2 Application, this includes regenerating the client secret | tags: user
+DELETE /user/applications/oauth2/{id} | delete an OAuth2 Application | tags: user
+POST /user/avatar | Update Avatar | tags: user
+DELETE /user/avatar | Delete Avatar | tags: user
+GET /user/blocks | List users blocked by the authenticated user | tags: user
+GET /user/blocks/{username} | Check if a user is blocked by the authenticated user | tags: user
+PUT /user/blocks/{username} | Block a user | tags: user
+DELETE /user/blocks/{username} | Unblock a user | tags: user
+GET /user/emails | List the authenticated user's email addresses | tags: user
+POST /user/emails | Add email addresses | tags: user
+DELETE /user/emails | Delete email addresses | tags: user
+GET /user/followers | List the authenticated user's followers | tags: user
+GET /user/following | List the users that the authenticated user is following | tags: user
+GET /user/following/{username} | Check whether a user is followed by the authenticated user | tags: user
+PUT /user/following/{username} | Follow a user | tags: user
+DELETE /user/following/{username} | Unfollow a user | tags: user
+GET /user/gpg_key_token | Get a Token to verify | tags: user
+POST /user/gpg_key_verify | Verify a GPG key | tags: user
+GET /user/gpg_keys | List the authenticated user's GPG keys | tags: user
+POST /user/gpg_keys | Create a GPG key | tags: user
+GET /user/gpg_keys/{id} | Get a GPG key | tags: user
+DELETE /user/gpg_keys/{id} | Remove a GPG key | tags: user
+GET /user/hooks | List the authenticated user's webhooks | tags: user
+POST /user/hooks | Create a hook | tags: user
+GET /user/hooks/{id} | Get a hook | tags: user
+PATCH /user/hooks/{id} | Update a hook | tags: user
+DELETE /user/hooks/{id} | Delete a hook | tags: user
+GET /user/keys | List the authenticated user's public keys | tags: user
+POST /user/keys | Create a public key | tags: user
+GET /user/keys/{id} | Get a public key | tags: user
+DELETE /user/keys/{id} | Delete a public key | tags: user
+GET /user/orgs | List the current user's organizations | tags: organization
+GET /user/projects | List your projects | tags: user
+POST /user/projects | Create a project owned by the authenticated user | tags: user
+GET /user/projects/{id} | Get a project | tags: user
+PATCH /user/projects/{id} | Edit a project | tags: user
+DELETE /user/projects/{id} | Delete a project | tags: user
+GET /user/projects/{id}/columns | List a project's columns | tags: user
+POST /user/projects/{id}/columns | Create a column in a project | tags: user
+POST /user/projects/{id}/columns/move | Reorder a project's columns | tags: user
+GET /user/projects/{id}/columns/{column_id} | Get a project column | tags: user
+PATCH /user/projects/{id}/columns/{column_id} | Edit a project column | tags: user
+DELETE /user/projects/{id}/columns/{column_id} | Delete a project column | tags: user
+POST /user/projects/{id}/columns/{column_id}/default | Set a project's default column | tags: user
+GET /user/projects/{id}/columns/{column_id}/issues | List the issues in a project column | tags: user
+POST /user/projects/{id}/columns/{column_id}/issues/{issue_id} | Add an issue to a project column | tags: user
+DELETE /user/projects/{id}/columns/{column_id}/issues/{issue_id} | Remove an issue from a project column | tags: user
+POST /user/projects/{id}/issues/{issue_id}/move | Move an issue between a project's columns | tags: user
+GET /user/repos | List the repos that the authenticated user owns | tags: user
+POST /user/repos | Create a repository | tags: user
+GET /user/settings | Get user settings | tags: user
+PATCH /user/settings | Update user settings | tags: user
+GET /user/starred | The repos that the authenticated user has starred | tags: user
+GET /user/starred/{owner}/{repo} | Whether the authenticated is starring the repo | tags: user
+PUT /user/starred/{owner}/{repo} | Star the given repo | tags: user
+DELETE /user/starred/{owner}/{repo} | Unstar the given repo | tags: user
+GET /user/stopwatches | Get list of all existing stopwatches | tags: user
+GET /user/subscriptions | List repositories watched by the authenticated user | tags: user
+GET /user/teams | List all the teams a user belongs to | tags: user
+GET /user/times | List the current user's tracked times | tags: user
+GET /users/search | Search for users | tags: user
+GET /users/{username} | Get a user | tags: user
+GET /users/{username}/activities/feeds | List a user's activity feeds | tags: user
+GET /users/{username}/followers | List the given user's followers | tags: user
+GET /users/{username}/following | List the users that the given user is following | tags: user
+GET /users/{username}/following/{target} | Check if one user is following another user | tags: user
+GET /users/{username}/gpg_keys | List the given user's GPG keys | tags: user
+GET /users/{username}/heatmap | Get a user's heatmap | tags: user
+GET /users/{username}/keys | List the given user's public keys | tags: user
+GET /users/{username}/orgs | List a user's organizations | tags: organization
+GET /users/{username}/orgs/{org}/permissions | Get user permissions in organization | tags: organization
+GET /users/{username}/projects | List a user's projects | tags: user
+GET /users/{username}/repos | List the repos owned by the given user | tags: user
+GET /users/{username}/starred | The repos that the given user has starred | tags: user
+GET /users/{username}/subscriptions | List the repositories watched by a user | tags: user
+GET /users/{username}/tokens | List the authenticated user's access tokens | tags: user
+POST /users/{username}/tokens | Create an access token | tags: user
+DELETE /users/{username}/tokens/{token} | delete an access token | tags: user
+GET /version | Returns the version of the Gitea application | tags: miscellaneous

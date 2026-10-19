@@ -150,6 +150,16 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
     # the attacker supplies another tenant's id, and a spec almost never shows
     # that ownership is enforced. These reads are not harmful in isolation, so
     # they only become terminals under an explicit tenant boundary.
+    # Exfiltration sinks. The writer side of a taint link writes free text to
+    # an object that others read, so an agent can be steered to write private
+    # data there (a comment, a message) where the attacker reads it. This is a
+    # second exfiltration mechanism beyond caller-named exit fields.
+    sink_writers: set[str] = set()
+    for lk in links:
+        if allowed(lk.writer):
+            terminals.setdefault(lk.writer, (Outcome.DATA_THEFT, 4, 0.6))
+            sink_writers.add(lk.writer)
+
     cross_tenant: set[str] = set()
     if boundaries and boundaries.tenant_param and boundaries.agent_tenant:
         marker = "{" + boundaries.tenant_param + "}"
@@ -213,6 +223,8 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
         if tkey in cross_tenant and boundaries:
             bnds = (f"crosses tenant boundary: no ownership check for "
                     f"'{boundaries.tenant_param}'",) + bnds
+        elif tkey in sink_writers:
+            bnds = ("writes to a reader-visible sink (exfiltration)",) + bnds
         ch = Chain(
             steps=(start, step), source_op=rep, source_field=entry_field[rep],
             outcome=out, boundaries=bnds,

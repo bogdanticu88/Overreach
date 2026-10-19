@@ -15,8 +15,9 @@ from apd.model import Api, Effect, EffectKind, Operation, Provenance
 # Verb hints found in path segments or operationIds.
 _DESTROY_WORDS = ("delete", "remove", "purge", "destroy", "revoke", "wipe")
 _IDENTITY_WORDS = ("password", "email", "token", "secret", "login",
-                   "membership", "role", "permission",
-                   "2fa", "mfa", "credential", "apikey", "api_key")
+                   "membership", "role", "permission", "collaborator", "scheme",
+                   "2fa", "mfa", "credential", "apikey", "api_key",
+                   "promote", "demote", "transfer", "rename")
 _MONEY_WORDS = ("payment", "charge", "invoice", "refund", "payout",
                 "subscription", "billing", "transfer", "order")
 _IRREVERSIBLE_WORDS = ("delete", "purge", "destroy", "transfer", "merge",
