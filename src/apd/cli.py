@@ -80,6 +80,7 @@ def main(argv: list[str] | None = None) -> int:
 
     s = sub.add_parser("scan", help="find attack chains and ranked fixes")
     s.add_argument("spec", help="path to an OpenAPI file or a directory of fragments")
+    s.add_argument("--boundaries", help="path to a boundaries file (scopes findings)")
     s.add_argument("--top", type=int, default=10, help="chains to show")
     s.add_argument("--json", action="store_true", help="emit JSON")
 
@@ -103,7 +104,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "scan":
         api = infer_api(_load(args.spec))
-        chains = find_chains(api)
+        bnd = None
+        if args.boundaries:
+            from apd.boundaries import load_path as load_boundaries
+            bnd = load_boundaries(args.boundaries)
+        chains = find_chains(api, boundaries=bnd)
         top = chains[:args.top]
         options = recommend(chains)
         if args.json:

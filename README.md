@@ -31,10 +31,17 @@ controls that would break them.
 ```bash
 pip install -e ".[dev]"
 
-apd profile <spec>              # coverage statistics
-apd scan <spec>                 # find chains and ranked fixes
-apd validate                    # run the reference API demo end to end
+apd profile <spec>                       # coverage statistics
+apd scan <spec>                          # find chains and ranked fixes
+apd scan <spec> --boundaries <file>      # scope findings to the agent's authority
+apd validate                             # run the reference API demo end to end
 ```
+
+A boundaries file declares what the agent may do, which fields are untrusted,
+and which path parameter identifies a tenant. Supplying one scopes "any tool
+reachable" down to what the agent can actually touch, turns credible reach into
+specific findings, and labels the boundary each chain crosses. See
+`src/apd/reference_api/boundaries.yaml` for an example.
 
 ## Safety
 

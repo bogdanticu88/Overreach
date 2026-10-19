@@ -15,6 +15,7 @@ import hashlib
 from dataclasses import dataclass, field
 from enum import Enum
 
+from apd.boundaries import Boundaries
 from apd.model import Api, EffectKind, Operation
 from apd.taint import WriteReadLink, find_links
 
@@ -107,20 +108,39 @@ def _shares_object(a: Operation, b: Operation) -> bool:
     return bool(shared)
 
 
-def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH) -> list[Chain]:
+def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
+                boundaries: Boundaries | None = None) -> list[Chain]:
     links: list[WriteReadLink] = find_links(api)
     by_key = api.by_key()
+    scoped = boundaries is not None and boundaries.allowed_ops is not None
+
+    def allowed(op_key: str) -> bool:
+        return boundaries.allows(op_key) if boundaries else True
 
     # Entry points: the reader side of a taint link (agent ingests the text).
     entries: dict[str, str] = {}   # op_key -> field that carries attacker text
     for lk in links:
         entries.setdefault(lk.reader, lk.free_text_fields[0] if lk.free_text_fields else "")
 
-    # Terminals: operations with a harmful effect.
+    # A boundaries file can declare untrusted fields explicitly, adding entries
+    # the taint pass may have missed (e.g. data written out of band).
+    if boundaries and boundaries.untrusted_fields:
+        untrusted_objs = {u.split(".")[0].rstrip("s").lower()
+                          for u in boundaries.untrusted_fields if "." in u}
+        for op in api.operations:
+            if op.objects and op.objects[-1] in untrusted_objs:
+                for e in op.effects:
+                    if e.kind == EffectKind.READ:
+                        entries.setdefault(op.key, boundaries.untrusted_fields[0])
+
+    # The agent can only read where it has access.
+    entries = {k: v for k, v in entries.items() if allowed(k)}
+
+    # Terminals: operations with a harmful effect the agent may actually call.
     terminals: dict[str, tuple[Outcome, int, float]] = {}
     for op in api.operations:
         t = _terminal_outcome(op)
-        if t is not None:
+        if t is not None and allowed(op.key):
             terminals[op.key] = t
 
     # Shared-object adjacency, used for same-domain data flows. Cross-domain
@@ -171,11 +191,14 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH) -> list[Chain]:
         start = Step(rep, f"agent reads attacker text in '{entry_field[rep]}'")
         step = Step(tkey, "injected agent invokes a privileged operation")
         min_conf = min(_path_conf(by_key[rep]), tconf)
+        # With a declared scope, this reach is credible, not a guess: the agent
+        # really can call this tool. Treat it as a specific finding.
         ch = Chain(
             steps=(start, step), source_op=rep, source_field=entry_field[rep],
-            outcome=out, boundaries=_boundaries((start, step), by_key),
-            impact=impact, plausibility=0.5, min_confidence=round(min_conf, 2),
-            generic=True, entry_count=len(reachers),
+            outcome=out, boundaries=_boundaries((start, step), by_key, boundaries),
+            impact=impact, plausibility=0.65 if scoped else 0.5,
+            min_confidence=round(min_conf, 2),
+            generic=not scoped, entry_count=len(reachers),
         )
         if ch.chain_id not in seen:
             seen.add(ch.chain_id)
@@ -223,13 +246,22 @@ def _path_conf(op: Operation) -> float:
     return min((e.confidence for e in op.effects), default=1.0)
 
 
-def _boundaries(steps: tuple[Step, ...], by_key: dict[str, Operation]) -> tuple[str, ...]:
+def _boundaries(steps: tuple[Step, ...], by_key: dict[str, Operation],
+                boundaries: Boundaries | None = None) -> tuple[str, ...]:
     bs: list[str] = ["untrusted text drives a privileged action"]
     for s in steps:
         op = by_key.get(s.op_key)
         if op and any(e.kind == EffectKind.CHANGE_IDENTITY for e in op.effects):
             bs.append("identity change inside the chain")
             break
+    if boundaries:
+        if boundaries.acts_as:
+            bs.append(f"acts as '{boundaries.acts_as}'")
+        tp = boundaries.tenant_param
+        if tp:
+            terminal = by_key.get(steps[-1].op_key)
+            if terminal and ("{" + tp + "}") in terminal.path:
+                bs.append(f"tenant-scoped on '{tp}'; confirm no cross-tenant access")
     return tuple(dict.fromkeys(bs))
 
 
