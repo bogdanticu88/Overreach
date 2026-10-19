@@ -33,6 +33,10 @@ class Boundaries:
     untrusted_fields: tuple[str, ...] = field(default_factory=tuple)
     # The path parameter that identifies a tenant, e.g. "owner" or "team_id".
     tenant_param: str | None = None
+    # The tenant the agent itself belongs to. When set, a tenant-scoped read
+    # the agent can call is a cross-tenant data-theft risk unless the API
+    # enforces ownership, which a spec almost never declares.
+    agent_tenant: str | None = None
 
     def allows(self, op_key: str) -> bool:
         if self.allowed_ops is None:
@@ -54,6 +58,8 @@ def load_text(text: str) -> Boundaries:
     allowed = agent.get("allowed_ops") if isinstance(agent, dict) else None
     allowed_ops = (tuple(str(x) for x in allowed)
                    if isinstance(allowed, list) else None)
+    agent_tenant = (str(agent.get("tenant")) if isinstance(agent, dict)
+                    and agent.get("tenant") else None)
     untrusted = data.get("untrusted_fields") or []
     untrusted_fields = tuple(str(x) for x in untrusted) if isinstance(untrusted, list) else ()
     tenants = data.get("tenants") or {}
@@ -62,6 +68,7 @@ def load_text(text: str) -> Boundaries:
     return Boundaries(
         acts_as=acts_as, allowed_ops=allowed_ops,
         untrusted_fields=untrusted_fields, tenant_param=tenant_param,
+        agent_tenant=agent_tenant,
     )
 
 

@@ -158,6 +158,9 @@ def _validate_demo() -> int:
 
     from fastapi.testclient import TestClient
 
+    from importlib.resources import files
+
+    from apd.boundaries import load_text as load_boundaries
     from apd.chains import find_chains
     from apd.replay import validate_chain
     from apd.reference_api import app, reset_state
@@ -166,8 +169,11 @@ def _validate_demo() -> int:
     client = TestClient(app)
     spec = _json.dumps(client.get("/openapi.json").json())
     api = infer_api(_load_text(spec))
-    chains = find_chains(api)
-    print(f"Reference API: {len(chains)} finding(s) from the spec.\n")
+    bnd_text = (files("apd.reference_api") / "boundaries.yaml").read_text()
+    bnd = load_boundaries(bnd_text)
+    chains = find_chains(api, boundaries=bnd)
+    print(f"Reference API: {len(chains)} finding(s) "
+          f"(scoped by the bundled boundaries file).\n")
     for ch in chains:
         reset_state()
         res = validate_chain(ch, TestClient(app))

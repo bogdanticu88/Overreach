@@ -143,6 +143,20 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
         if t is not None and allowed(op.key):
             terminals[op.key] = t
 
+    # Cross-tenant reads. With a tenant parameter and the agent's own tenant
+    # known, any tenant-scoped read the agent may call is a data-theft risk:
+    # the attacker supplies another tenant's id, and a spec almost never shows
+    # that ownership is enforced. These reads are not harmful in isolation, so
+    # they only become terminals under an explicit tenant boundary.
+    cross_tenant: set[str] = set()
+    if boundaries and boundaries.tenant_param and boundaries.agent_tenant:
+        marker = "{" + boundaries.tenant_param + "}"
+        for op in api.operations:
+            if (allowed(op.key) and marker in op.path
+                    and any(e.kind == EffectKind.READ for e in op.effects)):
+                terminals.setdefault(op.key, (Outcome.DATA_THEFT, 5, 0.6))
+                cross_tenant.add(op.key)
+
     # Shared-object adjacency, used for same-domain data flows. Cross-domain
     # reach is handled by direct emission below. Any object shared by many
     # operations behaves like a container (e.g. "issue" across a big API) and is
@@ -193,9 +207,13 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
         min_conf = min(_path_conf(by_key[rep]), tconf)
         # With a declared scope, this reach is credible, not a guess: the agent
         # really can call this tool. Treat it as a specific finding.
+        bnds = _boundaries((start, step), by_key, boundaries)
+        if tkey in cross_tenant and boundaries:
+            bnds = (f"crosses tenant boundary: no ownership check for "
+                    f"'{boundaries.tenant_param}'",) + bnds
         ch = Chain(
             steps=(start, step), source_op=rep, source_field=entry_field[rep],
-            outcome=out, boundaries=_boundaries((start, step), by_key, boundaries),
+            outcome=out, boundaries=bnds,
             impact=impact, plausibility=0.65 if scoped else 0.5,
             min_confidence=round(min_conf, 2),
             generic=not scoped, entry_count=len(reachers),

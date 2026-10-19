@@ -81,11 +81,32 @@ def validate_takeover(client: Any, canary: str | None = None) -> ValidationResul
     )
 
 
+def validate_cross_tenant_read(client: Any, canary: str | None = None) -> ValidationResult:
+    """The agent belongs to one tenant but reads another tenant's private file,
+    because the API does not enforce ownership on the tenant path parameter."""
+    canary = canary or f"CANARY-{secrets.token_hex(6)}"
+    from apd.reference_api import get_state
+    # A secret belonging to a different tenant (victim), not the agent's own.
+    get_state()["files"][("victim-tenant", "private", "secrets.env")] = f"KEY={canary}"
+    # The agent, scoped to its own tenant, reads the victim tenant's file.
+    resp = client.get("/repos/victim-tenant/private/contents/secrets.env")
+    leaked = resp.status_code == 200 and canary in str(resp.json())
+    return ValidationResult(
+        chain_id="",
+        evidence=Evidence.VALIDATED if leaked else Evidence.HYPOTHETICAL,
+        canary=canary,
+        detail=("agent read another tenant's private file; no ownership check"
+                if leaked else "cross-tenant read was blocked"),
+    )
+
+
 def validate_chain(chain: Chain, client: Any) -> ValidationResult:
     """Pick the scripted scenario that matches the chain's outcome."""
     keys = {s.op_key for s in chain.steps}
     if chain.outcome.value == "data_theft" and any("hooks" in k for k in keys):
         res = validate_exfiltration(client)
+    elif chain.outcome.value == "data_theft" and any("contents" in k for k in keys):
+        res = validate_cross_tenant_read(client)
     elif chain.outcome.value == "takeover" and any("/user/email" in k for k in keys):
         res = validate_takeover(client)
     else:

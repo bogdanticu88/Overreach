@@ -14,6 +14,9 @@ dev = ["pytest", "mypy", "types-PyYAML", "fastapi>=0.110", "httpx>=0.27"]
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"apd.reference_api" = ["*.yaml"]
+
 [project.scripts]
 apd = "apd.cli:main"
 

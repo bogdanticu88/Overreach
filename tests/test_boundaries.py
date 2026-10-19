@@ -59,3 +59,36 @@ def test_no_boundaries_leaves_reach_generic():
 def test_unknown_scope_allows_everything():
     b = Boundaries()  # no allowed_ops
     assert b.allows("anything at all")
+
+
+def test_cross_tenant_read_detected_under_tenant_boundary():
+    api = _api()
+    b = load_text(REF_BND.read_text())
+    assert b.agent_tenant == "acme"
+    chains = find_chains(api, boundaries=b)
+    ct = [c for c in chains
+          if c.steps[-1].op_key == "GET /repos/{owner}/{repo}/contents/{path}"]
+    assert ct, "a tenant-scoped read should be flagged as cross-tenant data theft"
+    assert any("tenant boundary" in bnd for bnd in ct[0].boundaries)
+
+
+def test_cross_tenant_read_validates():
+    from fastapi.testclient import TestClient
+
+    from apd.reference_api import app as refapp
+    from apd.reference_api import reset_state
+    from apd.replay import validate_cross_tenant_read
+    reset_state()
+    res = validate_cross_tenant_read(TestClient(refapp))
+    assert res.evidence.value == "validated"
+    assert "ownership" in res.detail
+
+
+def test_no_tenant_boundary_no_cross_tenant_finding():
+    # Without agent_tenant, a plain read is not promoted to a terminal.
+    api = _api()
+    b = Boundaries(allowed_ops=("GET /repos/{owner}/{repo}/contents/{path}",),
+                   tenant_param="owner")  # no agent_tenant
+    chains = find_chains(api, boundaries=b)
+    assert not any(c.steps[-1].op_key == "GET /repos/{owner}/{repo}/contents/{path}"
+                   for c in chains)

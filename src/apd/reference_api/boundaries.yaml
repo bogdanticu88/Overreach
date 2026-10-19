@@ -4,6 +4,7 @@
 
 agent:
   acts_as: support-agent
+  tenant: acme
   # The agent is meant only to read issues and manage webhooks. It should NOT
   # be able to change the user's email. Note that this list still permits the
   # exfiltration chain, which is the point: the scope looks reasonable yet a
