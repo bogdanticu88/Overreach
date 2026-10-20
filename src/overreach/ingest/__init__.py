@@ -93,15 +93,35 @@ def load_text(text: str, *, origin_hint: Origin = Origin.UNKNOWN) -> Api:
 
 
 def load_path(path: str | Path) -> Api:
-    p = Path(path)
-    # Reject by size on disk before reading, so an oversized file is never
-    # loaded into memory in full.
+    # Read from an open descriptor with a hard byte bound, so a non-regular file
+    # (a named pipe reports size 0) or a file that grows or is swapped after a
+    # stat() cannot stream unbounded input into memory. At most _MAX_BYTES+1
+    # bytes are ever read.
+    import os
+    import stat as _stat
+    # O_NONBLOCK so opening a FIFO/device does not block waiting for a writer;
+    # a non-regular file is then rejected immediately by the fstat check.
+    flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0)
     try:
-        if p.stat().st_size > _MAX_BYTES:
-            raise IngestError("spec exceeds size limit")
+        fd = os.open(path, flags)
     except OSError as exc:
-        raise IngestError(f"cannot stat spec: {exc}") from exc
-    return load_text(p.read_text(encoding="utf-8", errors="replace"))
+        raise IngestError(f"cannot open spec: {exc}") from exc
+    try:
+        if not _stat.S_ISREG(os.fstat(fd).st_mode):
+            raise IngestError("spec is not a regular file")
+        chunks: list[bytes] = []
+        total = 0
+        while total <= _MAX_BYTES:
+            chunk = os.read(fd, 1 << 16)
+            if not chunk:
+                break
+            chunks.append(chunk)
+            total += len(chunk)
+        if total > _MAX_BYTES:
+            raise IngestError("spec exceeds size limit")
+    finally:
+        os.close(fd)
+    return load_text(b"".join(chunks).decode("utf-8", errors="replace"))
 
 
 def merge_docs(docs: list[dict[str, Any]], title: str, version: str) -> Api:

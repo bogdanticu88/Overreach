@@ -46,12 +46,27 @@ def test_oversized_spec_rejected():
 
 
 def test_oversized_file_rejected_before_read(tmp_path):
-    # load_path must reject by size on disk, not after reading the whole file.
+    # load_path must bound the read, not read the whole file then check.
     from overreach.ingest import load_path
     f = tmp_path / "big.json"
     f.write_bytes(b"x" * (32 * 1024 * 1024 + 1))
     with pytest.raises(IngestError):
         load_path(f)
+
+
+def test_non_regular_file_rejected(tmp_path):
+    # A named pipe reports size 0 and could stream unbounded input; it must be
+    # rejected up front (before any read) as a non-regular file.
+    import os
+
+    from overreach.ingest import load_path
+    fifo = tmp_path / "pipe.json"
+    try:
+        os.mkfifo(fifo)
+    except (AttributeError, OSError):
+        pytest.skip("named pipes not supported on this platform")
+    with pytest.raises(IngestError):
+        load_path(fifo)
 
 
 def test_garbage_operation_is_skipped_not_fatal():
