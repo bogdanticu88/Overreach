@@ -201,12 +201,22 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
             freq[o] = freq.get(o, 0) + 1
     container = _CONTAINER_NOUNS | {o for o, n in freq.items() if n > _MAX_FANOUT}
 
-    def shares(a: Operation, b: Operation) -> bool:
-        return bool((set(a.objects) & set(b.objects)) - container)
-
-    adj: dict[str, list[Operation]] = {op.key: [] for op in ops}
-    for a in ops:
-        adj[a.key] = [b for b in ops if a.key != b.key and shares(a, b)]
+    # Build adjacency from an inverted index (object noun -> operations that name
+    # it) instead of comparing every operation pair. Container nouns are skipped,
+    # and a dynamic container is any noun shared by more than _MAX_FANOUT
+    # operations, so each group is small and the total work is bounded well below
+    # the O(n^2) all-pairs comparison.
+    by_obj: dict[str, list[Operation]] = {}
+    for op in ops:
+        for o in set(op.objects):
+            if o not in container:
+                by_obj.setdefault(o, []).append(op)
+    adj: dict[str, set[str]] = {op.key: set() for op in ops}
+    for group in by_obj.values():
+        for a in group:
+            for b in group:
+                if a.key != b.key:
+                    adj[a.key].add(b.key)
 
     chains: list[Chain] = []
     seen: set[str] = set()
@@ -231,6 +241,8 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
     #    untrusted entries can reach it. This is where a boundaries file later
     #    narrows "any entry" to "entries the agent's role can actually touch".
     for tkey, (out, impact, tconf) in terminals.items():
+        if len(chains) >= _MAX_CHAINS:
+            break
         reachers = [e for e in entry_keys if e != tkey]
         if not reachers:
             continue
@@ -277,11 +289,12 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
                 continue
             if len(path) >= max_depth:
                 continue
-            for nxt in adj[cur.key]:
-                if any(s.op_key == nxt.key for s in path):
+            for nxt_key in adj[cur.key]:
+                if any(s.op_key == nxt_key for s in path):
                     continue
+                nxt = by_key[nxt_key]
                 shared = cur.objects[-1] if cur.objects else "prior step"
-                step = Step(nxt.key, f"shares data with {shared}")
+                step = Step(nxt_key, f"shares data with {shared}")
                 stack.append((nxt, path + (step,), min(conf, _path_conf(nxt))))
     # Keep only the shortest chain to each distinct (entry, terminal, outcome):
     # a reader does not need twenty variations of the same end, just the

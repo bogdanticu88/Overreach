@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 
-from overreach.chains import Outcome, find_chains
+from overreach.chains import _MAX_CHAINS, Outcome, find_chains
 from overreach.infer import infer_api, infer_operation
 from overreach.ingest import _is_exit_field, load_text
 from overreach.model import EffectKind, Operation
@@ -85,6 +85,19 @@ def test_communication_sink_is_an_exfil_terminal():
     chains = find_chains(api)
     assert any(c.outcome == Outcome.DATA_THEFT
                and c.steps[-1].op_key == "POST /comments" for c in chains)
+
+
+def test_chain_cap_is_enforced_on_many_terminals():
+    # A spec with more harmful terminals than the cap must not exceed it (the
+    # cross-domain emission loop honours _MAX_CHAINS).
+    paths = {"/inbox": {"post": {"operationId": "msg",
+                                 **_body({"body": {"type": "string"}})},
+                        "get": {"operationId": "readInbox"}}}
+    for i in range(_MAX_CHAINS + 1):
+        paths[f"/thing{i}/{{id}}"] = {"delete": {"operationId": f"del{i}"}}
+    api = infer_api(load_text(_spec(paths)))
+    chains = find_chains(api)
+    assert len(chains) <= _MAX_CHAINS
 
 
 def test_same_domain_config_create_is_not_an_exfil_terminal():
