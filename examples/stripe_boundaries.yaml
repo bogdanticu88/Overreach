@@ -1,0 +1,62 @@
+# Example authority boundaries for the Stripe API (illustrative).
+#
+# This models ONE realistic restricted agent, not an omnipotent one. It uses
+# only capabilities visible in Stripe's public OpenAPI spec and states its
+# assumptions; it does not invent permissions or trust relationships. It is an
+# illustration for the real-world evaluation, not official Stripe guidance.
+#
+# Agent identity and accessible operations
+#   A customer-support / refunds assistant acting with a standard secret key
+#   scoped (by convention, see "unknown authorization" below) to reading billing
+#   data and issuing refunds and dispute evidence. It can read customers,
+#   charges, payment intents, invoices, disputes and events, and it can create
+#   refunds and submit dispute evidence. It cannot register webhooks, manage
+#   Connect accounts, issue cards, move Treasury funds, or operate Terminal.
+#
+# Attacker-controlled inputs
+#   Free text the agent reads while working: a customer's description/metadata,
+#   an invoice description/footer, dispute evidence text. These are set by
+#   outside parties (the customer, the counterparty) and can carry injected
+#   instructions.
+#
+# Trust and ownership boundaries
+#   All operations run within the single Stripe account the key belongs to. The
+#   public API does not let this key reach another merchant's account, so there
+#   is no tenant parameter to cross; cross-tenant detection is intentionally not
+#   modelled here.
+#
+# Permitted vs prohibited effects
+#   Permitted: read billing data; issue refunds (a bounded money movement);
+#   submit dispute evidence.
+#   Prohibited: create outbound webhooks (exfiltration); manage Connect accounts
+#   (takeover); issue cards or move Treasury balances (fraud); change API
+#   credentials.
+#
+# Unknown authorization relationships
+#   Stripe restricted keys express per-resource scopes that the OpenAPI spec does
+#   not encode. This file assumes the agent's key is limited to the operations
+#   below; if the deployed key is broader, widen allowed_ops to match reality.
+
+agent:
+  acts_as: support-refunds-agent
+  allowed_ops:
+    - "GET /v1/customers*"
+    - "GET /v1/charges*"
+    - "GET /v1/payment_intents*"
+    - "GET /v1/invoices*"
+    - "GET /v1/invoiceitems*"
+    - "GET /v1/disputes*"
+    - "GET /v1/refunds*"
+    - "GET /v1/balance_transactions*"
+    - "GET /v1/events*"
+    - "POST /v1/refunds"
+    - "POST /v1/charges/{charge}/refunds"
+    - "POST /v1/disputes/{dispute}"
+    - "POST /v1/invoices/{invoice}/pay"
+
+untrusted_fields:
+  - "customer.description"
+  - "customer.metadata"
+  - "invoice.description"
+  - "invoice.footer"
+  - "dispute.evidence"
