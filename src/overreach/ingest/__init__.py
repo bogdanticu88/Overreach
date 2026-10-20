@@ -2,14 +2,19 @@
 
 Loads a spec from JSON or YAML into the internal ``Api`` model. Hostile by
 assumption: nothing is executed, external ``$ref`` targets are never fetched,
-YAML is parsed in safe mode only, and size / depth / total-work limits bound the
-work so a crafted spec cannot exhaust memory or CPU.
+YAML is parsed in safe mode only, and size / depth / per-operation node limits
+bound the work so a crafted spec cannot exhaust memory or CPU.
+
+References are resolved lazily and only where fields are read (an operation's
+parameters and request body), never by inlining the whole operation. This keeps
+work linear in the parts that matter even on large, heavily ``$ref``-ed specs,
+instead of expanding every response schema. Cycles are caught by tracking the
+``$ref`` pointers on the current ancestor chain.
 
 Schema walking descends nested objects, array ``items`` and ``allOf`` /
 ``oneOf`` / ``anyOf`` compositions so that exit fields (URL / callback / email)
 and free-text fields buried inside composed schemas are not missed. Every
-unsupported or ambiguous construct the walker meets is recorded as a warning on
-the resulting ``Api`` rather than silently dropped.
+unsupported or ambiguous construct the walker meets is recorded as a warning.
 """
 from __future__ import annotations
 
@@ -25,15 +30,12 @@ from overreach.model import Api, Field, Operation, Origin
 
 _HTTP_METHODS = ("get", "post", "put", "patch", "delete")
 _MAX_BYTES = 32 * 1024 * 1024
+# Longest chain of $ref -> $ref hops we will follow before giving up.
 _MAX_REF_DEPTH = 64
-# Total nodes the ref-resolver may expand for one document. A spec that repeats
-# references with wide fan-out can amplify node count super-linearly even within
-# the depth bound; this caps the total work regardless of shape.
-_MAX_RESOLVE_NODES = 200_000
-# Bound on how deep the schema-field walker descends into nested objects /
-# arrays / compositions, and how many schema nodes it will visit per operation.
-_MAX_SCHEMA_DEPTH = 24
-_MAX_SCHEMA_NODES = 10_000
+# Per-operation bounds for the field walker, so one pathological operation
+# cannot starve the rest of the document or run unbounded.
+_MAX_SCHEMA_DEPTH = 48
+_MAX_SCHEMA_NODES = 20_000
 _EXIT_FORMATS = ("uri", "url", "uri-reference", "email", "hostname", "idn-email")
 _EXIT_NAME_HINTS = (
     "url", "uri", "callback", "webhook", "redirect", "destination",
@@ -47,9 +49,8 @@ class IngestError(Exception):
 
 @dataclass
 class _Ctx:
-    """Mutable per-document state for bounded resolution and warnings."""
+    """Per-document state: the root (for pointer resolution) and warnings."""
     root: dict[str, Any]
-    nodes: int = 0                      # resolver nodes expanded so far
     warnings: list[str] = field(default_factory=list)
     _seen: set[str] = field(default_factory=set)
 
@@ -105,39 +106,36 @@ def merge_docs(docs: list[dict[str, Any]], title: str, version: str) -> Api:
     return _build(merged, json.dumps(merged, sort_keys=True))
 
 
-def _resolve(node: Any, ctx: _Ctx, depth: int = 0) -> Any:
-    """Resolve internal ``$ref`` only, within depth and total-node budgets.
+def _deref(node: Any, ctx: _Ctx, seen: frozenset[str]) -> tuple[Any, frozenset[str]]:
+    """Follow a chain of internal ``$ref`` hops to the node they point at.
 
-    External refs become an inert marker and are never fetched. A ref pointer
-    that does not resolve, or work beyond the budgets, is recorded as a warning
-    and the subtree is dropped (returned as ``{}``) rather than raising.
+    External refs are never fetched (warned, treated as empty). A pointer that
+    does not resolve, a cycle, or a ref chain longer than the bound all resolve
+    to ``{}``. Returns the resolved node and the updated ancestor-pointer set.
     """
-    if depth > _MAX_REF_DEPTH:
-        ctx.warn(f"schema nesting exceeded depth limit ({_MAX_REF_DEPTH}); truncated")
-        return {}
-    ctx.nodes += 1
-    if ctx.nodes > _MAX_RESOLVE_NODES:
-        ctx.warn(f"$ref expansion exceeded node budget ({_MAX_RESOLVE_NODES}); truncated")
-        return {}
-    if isinstance(node, dict):
-        ref = node.get("$ref")
-        if isinstance(ref, str):
-            if not ref.startswith("#/"):
-                ctx.warn(f"external $ref not resolved (never fetched): {ref}")
-                return {"_external_ref": ref}
-            target: Any = ctx.root
-            for part in ref[2:].split("/"):
-                part = part.replace("~1", "/").replace("~0", "~")
-                if isinstance(target, dict) and part in target:
-                    target = target[part]
-                else:
-                    ctx.warn(f"internal $ref did not resolve: {ref}")
-                    return {}
-            return _resolve(target, ctx, depth + 1)
-        return {k: _resolve(v, ctx, depth + 1) for k, v in node.items()}
-    if isinstance(node, list):
-        return [_resolve(v, ctx, depth + 1) for v in node]
-    return node
+    hops = 0
+    while isinstance(node, dict) and isinstance(node.get("$ref"), str):
+        ref = node["$ref"]
+        if not ref.startswith("#/"):
+            ctx.warn(f"external $ref not resolved (never fetched): {ref}")
+            return {}, seen
+        if ref in seen:                 # cycle on the ancestor chain
+            return {}, seen
+        hops += 1
+        if hops > _MAX_REF_DEPTH:
+            ctx.warn(f"$ref chain exceeded {_MAX_REF_DEPTH} hops; truncated")
+            return {}, seen
+        target: Any = ctx.root
+        for part in ref[2:].split("/"):
+            part = part.replace("~1", "/").replace("~0", "~")
+            if isinstance(target, dict) and part in target:
+                target = target[part]
+            else:
+                ctx.warn(f"internal $ref did not resolve: {ref}")
+                return {}, seen
+        seen = seen | {ref}
+        node = target
+    return node, seen
 
 
 def _field_origin(name: str) -> Origin:
@@ -166,92 +164,106 @@ def _leaf_type(schema: dict[str, Any]) -> str:
 
 @dataclass
 class _Walk:
-    """Accumulator for the schema-field walker (bounded by node count)."""
+    """Accumulator for the schema-field walker, bounded per operation."""
     out: list[Field]
+    ctx: _Ctx
     nodes: int = 0
-    ctx: _Ctx | None = None
+    # True once a oneOf/anyOf branch was entered: fields below are only present
+    # in *some* valid requests, not guaranteed in every request.
+    optional_context: bool = False
 
 
-def _walk_schema(schema: Any, name: str, location: str, w: _Walk, depth: int) -> None:
-    """Descend a (ref-resolved) schema, emitting a Field for each leaf property.
-
-    Handles nested objects (``properties``), arrays (``items``) and the
-    ``allOf`` / ``oneOf`` / ``anyOf`` compositions. ``name`` is the property
-    name under which this schema sits ("" at the body root). Bounded by
-    ``_MAX_SCHEMA_DEPTH`` and ``_MAX_SCHEMA_NODES``.
-    """
+def _walk_schema(schema: Any, name: str, location: str, w: _Walk, depth: int,
+                 seen: frozenset[str], optional: bool = False) -> None:
+    """Descend a schema, resolving ``$ref`` lazily, emitting a Field per leaf
+    property. Handles nested objects, array ``items`` and allOf/oneOf/anyOf.
+    ``optional`` marks fields reached only through a oneOf/anyOf branch."""
+    schema, seen = _deref(schema, w.ctx, seen)
     if not isinstance(schema, dict):
         return
     w.nodes += 1
     if w.nodes > _MAX_SCHEMA_NODES:
-        if w.ctx:
-            w.ctx.warn(f"schema too large to walk fully ({_MAX_SCHEMA_NODES} nodes); truncated")
+        w.ctx.warn(f"schema too large to walk fully ({_MAX_SCHEMA_NODES} nodes); truncated")
         return
     if depth > _MAX_SCHEMA_DEPTH:
-        if w.ctx:
-            w.ctx.warn(f"schema nested beyond {_MAX_SCHEMA_DEPTH} levels; truncated")
+        w.ctx.warn(f"schema nested beyond {_MAX_SCHEMA_DEPTH} levels; truncated")
         return
 
-    # Compositions: walk every branch. oneOf/anyOf branches keep the same name.
-    for key in ("allOf", "oneOf", "anyOf"):
-        sub = schema.get(key)
-        if isinstance(sub, list):
-            if key in ("oneOf", "anyOf") and w.ctx:
-                w.ctx.warn(f"ambiguous '{key}' schema on '{name or '<body>'}'; "
-                           "fields from all branches are considered")
-            for s in sub:
-                _walk_schema(s, name, location, w, depth + 1)
+    # allOf: every branch contributes (intersection semantics -> all present).
+    for s in schema.get("allOf", []) or []:
+        _walk_schema(s, name, location, w, depth + 1, seen, optional)
+    # oneOf/anyOf: fields come from alternative shapes, so they are only
+    # *possibly* present. Mark them optional and warn once per site.
+    for key in ("oneOf", "anyOf"):
+        branches = schema.get(key)
+        if isinstance(branches, list) and branches:
+            # Collapsed to one message per document: the per-field detail is
+            # carried by each Field's required=False flag, not by a warning line.
+            w.ctx.warn("spec uses oneOf/anyOf: fields from alternative branches are "
+                       "treated as possibly-present (required=False), not guaranteed")
+            for s in branches:
+                _walk_schema(s, name, location, w, depth + 1, seen, optional=True)
 
     props = schema.get("properties")
     if isinstance(props, dict):
+        required = schema.get("required")
+        req = set(required) if isinstance(required, list) else set()
         for pname, psch in props.items():
+            psch, psub_seen = _deref(psch, w.ctx, seen)
             if not isinstance(psch, dict):
                 continue
             pn = str(pname)
-            ptype = _leaf_type(psch)
-            # Record this property as a field (leaf or not); its type and name
-            # drive exit / free-text detection downstream.
+            # A property is only reliably present if it is in this object's
+            # "required" list and not reached through an optional branch.
+            opt = optional or (pn not in req)
             w.out.append(Field(pn, location, _field_origin(pn),
-                               _is_exit_field(pn, psch), ptype))
-            # Descend into nested objects and array element schemas so that
-            # exit / free-text fields deeper in the tree are also recorded.
-            if ptype == "object" or "properties" in psch or any(
+                               _is_exit_field(pn, psch), _leaf_type(psch),
+                               required=not opt))
+            if psch.get("type") == "object" or "properties" in psch or any(
                     k in psch for k in ("allOf", "oneOf", "anyOf")):
-                _walk_schema(psch, pn, location, w, depth + 1)
+                _walk_schema(psch, pn, location, w, depth + 1, psub_seen, opt)
             items = psch.get("items")
             if isinstance(items, dict):
-                _walk_schema(items, pn, location, w, depth + 1)
+                _walk_schema(items, pn, location, w, depth + 1, psub_seen, opt)
 
-    # A top-level array body: walk its element schema under the body name.
     items = schema.get("items")
     if isinstance(items, dict) and "properties" not in schema:
-        _walk_schema(items, name, location, w, depth + 1)
+        _walk_schema(items, name, location, w, depth + 1, seen, optional)
 
 
-def _collect_fields(op: dict[str, Any], ctx: _Ctx) -> tuple[Field, ...]:
+def _collect_fields(raw_op: dict[str, Any], ctx: _Ctx) -> tuple[Field, ...]:
     out: list[Field] = []
-    for p in op.get("parameters", []) or []:
+    empty: frozenset[str] = frozenset()
+    for p in raw_op.get("parameters", []) or []:
+        p, _ = _deref(p, ctx, empty)
         if not isinstance(p, dict):
             continue
         name = str(p.get("name", ""))
         loc = str(p.get("in", ""))
-        sch = p.get("schema") or {}
+        sch, _ = _deref(p.get("schema") or {}, ctx, empty)
+        sch = sch if isinstance(sch, dict) else {}
         if name:
             out.append(Field(name, loc, _field_origin(name),
-                             _is_exit_field(name, sch), _leaf_type(sch)))
-    body = op.get("requestBody") or {}
+                             _is_exit_field(name, sch), _leaf_type(sch),
+                             required=bool(p.get("required", False))))
+    body, _ = _deref(raw_op.get("requestBody") or {}, ctx, empty)
     content = (body.get("content") or {}) if isinstance(body, dict) else {}
+    w = _Walk(out=out, ctx=ctx)
     for media in content.values():
         sch = (media or {}).get("schema") or {}
         if isinstance(sch, dict):
-            w = _Walk(out=out, ctx=ctx)
-            _walk_schema(sch, "", "body", w, 0)
-    # Dedupe by (name, location) keeping the first (an exit hit wins a tie).
+            _walk_schema(sch, "", "body", w, 0, empty)
+    # Dedupe by (name, location); an exit hit and a required hit win ties.
     best: dict[tuple[str, str], Field] = {}
     for f in out:
         k = (f.name, f.location)
-        if k not in best or (f.is_exit and not best[k].is_exit):
+        cur = best.get(k)
+        if cur is None:
             best[k] = f
+        else:
+            best[k] = Field(f.name, f.location, f.origin,
+                            f.is_exit or cur.is_exit, f.schema_type or cur.schema_type,
+                            required=f.required or cur.required)
     return tuple(best.values())
 
 
@@ -271,15 +283,14 @@ def _build(doc: dict[str, Any], raw: str) -> Api:
             raw_op = item.get(method)
             if not isinstance(raw_op, dict):
                 continue
-            op = _resolve(raw_op, ctx)
-            op_id = str(op.get("operationId") or f"{method}_{path}")
-            tags = tuple(str(t) for t in (op.get("tags") or []) if isinstance(t, str))
-            summary = str(op.get("summary", ""))
+            op_id = str(raw_op.get("operationId") or f"{method}_{path}")
+            tags = tuple(str(t) for t in (raw_op.get("tags") or []) if isinstance(t, str))
+            summary = str(raw_op.get("summary", ""))
             schemes: list[str] = []
-            for sec in op.get("security", []) or []:
+            for sec in raw_op.get("security", []) or []:
                 if isinstance(sec, dict):
                     schemes.extend(sec.keys())
-            fields = _collect_fields(op, ctx)
+            fields = _collect_fields(raw_op, ctx)
             ops.append(Operation(
                 op_id=op_id, method=method, path=path, tags=tags,
                 summary=summary, auth_schemes=tuple(schemes), fields=fields,

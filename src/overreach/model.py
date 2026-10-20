@@ -71,6 +71,11 @@ class Field:
     origin: Origin
     is_exit: bool = False            # accepts a URL, email, callback or destination
     schema_type: str = ""
+    # True only if the schema guarantees this field in every valid request (in
+    # the object's "required" list, not reached through a oneOf/anyOf branch).
+    # Parser coverage is not semantic presence: a field extracted from a
+    # composition may appear in only some valid requests.
+    required: bool = False
 
 
 @dataclass(frozen=True, slots=True)
