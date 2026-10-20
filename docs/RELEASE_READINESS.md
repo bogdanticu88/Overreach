@@ -59,18 +59,21 @@ now fixed with regression tests (see the "review finding" commits):
 - **Process — CI did not run on the RC branch; scan comment overclaimed gating.**
   Both fixed.
 
-PR #1 opened `v0.1.0-rc` into `master`; GitHub Actions ran and all checks
+PR #1 merged `v0.1.0-rc` into `master`; GitHub Actions ran and all checks
 (`test`, `scan`, `overreach`) passed, so the "CI running on GitHub" condition is
-met. The one remaining condition is integration-time: a real outbound sender must
-honour the pinning contract (connect to a validated IP, Host/SNI = hostname, no
-re-resolve, revalidate redirects) — Overreach ships none, and the contract fails
-closed without one. It is not an unconditional PASS because that integration and
-the single-reviewer precision judgement remain; it is not a FAIL because nothing
-is broken and no claim is overstated.
+met. The pinning-contract condition now also has an in-repo, tested **reference
+sender** (`overreach.reference_api.http_sender.pinning_http_sender`,
+stdlib-only, opt-in, off the default path) that honours the contract — connect to
+a validated IP, present the hostname for Host/TLS SNI, no re-resolve, fail closed
+on redirects. An integrator can wire it or write their own; the default transport
+still ships no sender and fails closed. It is not an unconditional PASS because
+the single-reviewer precision judgement remains and a production integration
+should still be reviewed; it is not a FAIL because nothing is broken and no claim
+is overstated.
 
 ## What the evidence shows
 
-- Quality gates: ruff, mypy (strict), pytest (98), Bandit (0 issues), pip-audit
+- Quality gates: ruff, mypy (strict), pytest (104), Bandit (0 issues), pip-audit
   (clean) — all green. Package builds (sdist + wheel), `twine check` passes, and a
   clean-venv install runs `profile`/`scan`/`validate` and the flagship demo.
 - Evidence integrity: static analysis is always `hypothetical`; only exact-

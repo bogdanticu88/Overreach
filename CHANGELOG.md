@@ -36,9 +36,16 @@ interrupt them, and can validate chains against a bundled reference API.
 - **Replay.** Validates a chain by executing its exact operation sequence against
   the in-process reference API with a unique canary; evidence is bound to the
   chain, never promoted by a different scripted attack.
+- **Transport.** The reference API's webhook delivery is offline by default
+  (records in memory, no socket). An opt-in `GuardedHttpTransport` refuses
+  non-HTTP schemes and destinations that are, or resolve to, loopback/private
+  addresses in any IP encoding, resolves a hostname once and pins the connection
+  to the validated IPs, and fails closed without a sender. A stdlib-only
+  reference pinning sender (`reference_api.http_sender`) is provided opt-in; the
+  default path ships no network sender.
 - **Reports.** JSON, SARIF 2.1.0, a self-contained HTML report, and a plain
   narrative. CLI: `profile`, `scan`, `validate`.
-- **Quality.** ruff, mypy (strict), pytest (98 tests), Bandit and a runtime
+- **Quality.** ruff, mypy (strict), pytest (104 tests), Bandit and a runtime
   dependency audit, all in CI; GitHub Actions pinned to commit SHAs.
 
 ### Evidence model
