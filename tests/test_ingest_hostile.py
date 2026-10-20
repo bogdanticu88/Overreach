@@ -45,6 +45,15 @@ def test_oversized_spec_rejected():
         load_text(big)
 
 
+def test_oversized_file_rejected_before_read(tmp_path):
+    # load_path must reject by size on disk, not after reading the whole file.
+    from overreach.ingest import load_path
+    f = tmp_path / "big.json"
+    f.write_bytes(b"x" * (32 * 1024 * 1024 + 1))
+    with pytest.raises(IngestError):
+        load_path(f)
+
+
 def test_garbage_operation_is_skipped_not_fatal():
     # method value is a string, not an operation object: skip it, don't crash.
     api = load_text(_spec({"/a": {"get": "nonsense", "post": {"operationId": "p"}}}))

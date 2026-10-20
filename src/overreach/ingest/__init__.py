@@ -94,6 +94,13 @@ def load_text(text: str, *, origin_hint: Origin = Origin.UNKNOWN) -> Api:
 
 def load_path(path: str | Path) -> Api:
     p = Path(path)
+    # Reject by size on disk before reading, so an oversized file is never
+    # loaded into memory in full.
+    try:
+        if p.stat().st_size > _MAX_BYTES:
+            raise IngestError("spec exceeds size limit")
+    except OSError as exc:
+        raise IngestError(f"cannot stat spec: {exc}") from exc
     return load_text(p.read_text(encoding="utf-8", errors="replace"))
 
 
