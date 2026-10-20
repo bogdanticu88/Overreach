@@ -66,6 +66,14 @@ def test_non_ownership_transfer_is_not_identity_change():
         assert not any(e.kind == EffectKind.CHANGE_IDENTITY for e in op.effects), path
 
 
+def test_hyphenated_path_segment_yields_underscored_object():
+    # A declared untrusted field like "mcp_server.description" must match the
+    # noun from a hyphenated resource path, not just its first word.
+    from overreach.infer import _objects_in_path
+    objs = _objects_in_path("/v2/action-gateway/mcp-servers/{id}")
+    assert "mcp_server" in objs and "action_gateway" in objs
+
+
 def test_credential_and_oauth_addition_is_identity_change():
     for path in ["/user/keys", "/repos/{owner}/{repo}/keys",
                  "/user/applications/oauth2"]:

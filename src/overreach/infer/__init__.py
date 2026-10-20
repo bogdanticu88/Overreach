@@ -53,7 +53,10 @@ def _objects_in_path(path: str) -> tuple[str, ...]:
     for seg in path.strip("/").split("/"):
         if seg.startswith("{") or not seg:
             continue
-        m = _OBJECT_RE.match(seg)
+        # Normalise a hyphenated segment to one underscored noun so a resource
+        # like "mcp-servers" becomes "mcp_server" (matching a declared
+        # untrusted field "mcp_server.description"), not just its first word.
+        m = _OBJECT_RE.match(seg.replace("-", "_"))
         if not m:
             continue
         noun = (m.group(0).rstrip("s") or m.group(0)).lower()
