@@ -85,10 +85,15 @@ overreach scan path/to/openapi.json --boundaries path/to/boundaries.yaml
 
 ## A reproducible multi-step attack path
 
-`overreach validate` is fully offline and deterministic. It scans a bundled
-reference API (a small code host written to score well on agent-readiness
-linters), then **executes** each discovered chain against an in-process copy with
-a unique canary and watches whether the canary leaves:
+For the full story end to end — attacker input, agent authority, the permitted
+call sequence, the boundary crossed, the leaked canary, a proposed control, and a
+rerun showing the control actually prevents it — run `python demo/flagship_demo.py`
+(see `demo/README.md`). It is offline and deterministic.
+
+`overreach validate` is the quick version. It scans a bundled reference API (a
+small code host written to score well on agent-readiness linters), then
+**executes** each discovered chain against an in-process copy with a unique canary
+and watches whether the canary leaves:
 
 ```
 Reference API: 3 finding(s) (scoped by the bundled boundaries file).
