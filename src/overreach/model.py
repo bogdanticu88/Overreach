@@ -57,7 +57,7 @@ class Effect:
     confidence: Confidence
     reason: str                      # short human-readable justification
 
-    def downgraded_to(self, cap: Confidence) -> "Effect":
+    def downgraded_to(self, cap: Confidence) -> Effect:
         """Return a copy whose confidence is no higher than ``cap``."""
         if self.confidence <= cap:
             return self
@@ -89,7 +89,7 @@ class Operation:
     def key(self) -> str:
         return f"{self.method.upper()} {self.path}"
 
-    def with_effects(self, effects: tuple[Effect, ...]) -> "Operation":
+    def with_effects(self, effects: tuple[Effect, ...]) -> Operation:
         return Operation(
             self.op_id, self.method, self.path, self.tags, self.summary,
             self.auth_schemes, self.fields, effects, self.objects,
