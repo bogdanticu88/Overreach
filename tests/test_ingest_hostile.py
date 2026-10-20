@@ -145,12 +145,12 @@ def test_allof_composition_merges_fields():
         "requestBody": {"content": {"application/json": {"schema": {
             "allOf": [
                 {"type": "object", "properties": {"body": {"type": "string"}}},
-                {"type": "object", "properties": {"redirect": {"type": "string"}}},
+                {"type": "object", "properties": {"webhook_url": {"type": "string"}}},
             ]}}}},
     }}}))
     names = {f.name for f in api.operations[0].fields}
-    assert {"body", "redirect"} <= names
-    assert any(f.name == "redirect" and f.is_exit for f in api.operations[0].fields)
+    assert {"body", "webhook_url"} <= names
+    assert any(f.name == "webhook_url" and f.is_exit for f in api.operations[0].fields)
 
 
 def test_oneof_branches_are_considered_and_warned():

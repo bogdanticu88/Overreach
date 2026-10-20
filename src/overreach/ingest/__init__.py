@@ -37,9 +37,21 @@ _MAX_REF_DEPTH = 64
 _MAX_SCHEMA_DEPTH = 48
 _MAX_SCHEMA_NODES = 20_000
 _EXIT_FORMATS = ("uri", "url", "uri-reference", "email", "hostname", "idn-email")
+# A field whose name says it carries data OUT to a caller-named destination
+# (a webhook payload sink, a notify/callback target, an email).
 _EXIT_NAME_HINTS = (
-    "url", "uri", "callback", "webhook", "redirect", "destination",
+    "url", "uri", "callback", "webhook", "destination",
     "endpoint", "email", "target_url", "notify",
+)
+# URL-shaped fields that are NOT attacker-directed data egress: OAuth/OIDC
+# provider endpoints, browser redirect/return targets, and provider-fixed links.
+# A field matching one of these is not treated as an exfiltration exit even
+# though it is URL-shaped (removes a class of false exfil terminals, e.g. Stripe
+# dispute-evidence links and DigitalOcean oauth_authorize_url/oauth_token_url).
+_NONEGRESS_URL_HINTS = (
+    "authorize", "token_url", "tokenurl", "return", "redirect", "success",
+    "cancel", "login", "logout", "issuer", "jwks", "policy", "receipt",
+    "terms", "privacy",
 )
 
 
@@ -144,10 +156,20 @@ def _field_origin(name: str) -> Origin:
 
 
 def _is_exit_field(name: str, schema: dict[str, Any]) -> bool:
-    fmt = str(schema.get("format", "")).lower()
-    if fmt in _EXIT_FORMATS:
-        return True
     low = name.lower()
+    # A provider/redirect URL is not attacker-directed egress, even if it is
+    # URL-shaped by name or format.
+    if any(h in low for h in _NONEGRESS_URL_HINTS):
+        return False
+    # An email that names a subject's stored address (customer_email_address,
+    # billing_email, owner_email) is a data attribute, not a send-to
+    # destination. A bare "email" or a "notify"/"recipient" email still counts.
+    if "email" in low and ("_address" in low or any(
+            q in low for q in ("customer", "billing", "owner", "holder",
+                               "sender", "from_", "contact"))):
+        return False
+    if str(schema.get("format", "")).lower() in _EXIT_FORMATS:
+        return True
     return any(h in low for h in _EXIT_NAME_HINTS)
 
 

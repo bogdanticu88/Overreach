@@ -17,7 +17,15 @@ _DESTROY_WORDS = ("delete", "remove", "purge", "destroy", "revoke", "wipe")
 _IDENTITY_WORDS = ("password", "email", "token", "secret", "login",
                    "membership", "role", "permission", "collaborator", "scheme",
                    "2fa", "mfa", "credential", "apikey", "api_key",
-                   "promote", "demote", "transfer", "rename")
+                   "promote", "demote")
+# "transfer"/"rename" only mean a takeover when they act on something ownable.
+# A workspace/file transfer or a label rename is not an ownership change, so
+# these are gated on an ownership object rather than matched as bare words.
+_OWNERSHIP_VERBS = ("transfer", "rename")
+_OWNERSHIP_OBJECTS = frozenset((
+    "repo", "repository", "org", "organization", "organisation", "project",
+    "account", "domain", "zone", "team", "namespace", "workspace_owner",
+))
 _MONEY_WORDS = ("payment", "charge", "invoice", "refund", "payout",
                 "subscription", "billing", "transfer", "order")
 # Path-object nouns for credential/key material. Adding one of these is
@@ -27,6 +35,7 @@ _MONEY_WORDS = ("payment", "charge", "invoice", "refund", "payout",
 # "keyword" cannot trigger it.
 _CREDENTIAL_OBJECTS = frozenset((
     "key", "gpg_key", "ssh_key", "deploy_key", "credential", "secret",
+    "oauth", "oauth2",
 ))
 _IRREVERSIBLE_WORDS = ("delete", "purge", "destroy", "transfer", "merge",
                        "archive", "finalize", "finalise")
@@ -100,6 +109,12 @@ def infer_operation(op: Operation) -> Operation:
         effects.append(Effect(EffectKind.CHANGE_IDENTITY, target,
                               Provenance.INFERRED, 0.6,
                               "adds credential/key material (persistent access)"))
+    # Transfer/rename is an ownership change only on an ownable resource.
+    if (method != "get" and any(v in blob for v in _OWNERSHIP_VERBS)
+            and any(o in _OWNERSHIP_OBJECTS for o in objects)):
+        effects.append(Effect(EffectKind.CHANGE_IDENTITY, target,
+                              Provenance.INFERRED, 0.6,
+                              "ownership transfer/rename of an ownable resource"))
     if method != "get" and any(w in blob for w in _MONEY_WORDS):
         effects.append(Effect(EffectKind.MOVE_MONEY, target, Provenance.INFERRED,
                               0.5, "money-related wording"))

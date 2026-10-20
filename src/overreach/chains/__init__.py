@@ -32,6 +32,14 @@ _CONTAINER_NOUNS = frozenset((
     "account", "workspace", "channel", "namespace",
 ))
 
+# Communication-surface objects: ones a different party can read, so writing
+# private data into them is a genuine exfiltration sink. Used to keep the
+# sink-writer terminal from firing on self-read config objects.
+_COMM_OBJECTS = frozenset((
+    "comment", "message", "post", "issue", "review", "note", "discussion",
+    "thread", "ticket", "reply", "chat", "mail", "email",
+))
+
 
 class Outcome(str, Enum):
     DATA_THEFT = "data_theft"
@@ -159,11 +167,16 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
     # they only become terminals under an explicit tenant boundary.
     # Exfiltration sinks. The writer side of a taint link writes free text to
     # an object that others read, so an agent can be steered to write private
-    # data there (a comment, a message) where the attacker reads it. This is a
-    # second exfiltration mechanism beyond caller-named exit fields.
+    # data there where the attacker reads it. This is a second exfiltration
+    # mechanism beyond caller-named exit fields, but it is only a trust-boundary
+    # crossing when the object is a communication surface a different party can
+    # read (a comment, message, post, issue). Writing a config object's
+    # description that the same operator reads back is not exfiltration, so the
+    # sink is restricted to communication-surface objects rather than every
+    # written-and-read object.
     sink_writers: set[str] = set()
     for lk in links:
-        if allowed(lk.writer):
+        if allowed(lk.writer) and lk.obj in _COMM_OBJECTS:
             terminals.setdefault(lk.writer, (Outcome.DATA_THEFT, 4, 0.6))
             sink_writers.add(lk.writer)
 
