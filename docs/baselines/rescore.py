@@ -101,14 +101,30 @@ def gitea_api():
 
 def mattermost_api():
     docs = []
-    for f in sorted(glob.glob(SPECS + "/mm/api/v4/source/*.yaml")):
+    failures = []
+    files = sorted(glob.glob(SPECS + "/mm/api/v4/source/*.yaml"))
+    if not files:
+        raise SystemExit(f"no Mattermost fragments found under {SPECS}/mm/api/v4/source/")
+    for f in files:
         try:
             d = yaml.safe_load(open(f))
-            if isinstance(d, dict):
-                docs.append(d)
-        except Exception:
-            pass
-    return infer_api(merge_docs(docs, "Mattermost", "v4"))
+        except yaml.YAMLError as exc:
+            failures.append((f, str(exc).splitlines()[0]))
+            continue
+        if isinstance(d, dict):
+            docs.append(d)
+    if failures:
+        # Surface bad fragments loudly rather than silently scoring the rest:
+        # a malformed spec must not read as a clean 0/20.
+        print(f"WARNING: {len(failures)} Mattermost fragment(s) failed to parse:",
+              file=sys.stderr)
+        for f, msg in failures:
+            print(f"  {f}: {msg}", file=sys.stderr)
+    api = infer_api(merge_docs(docs, "Mattermost", "v4"))
+    if not api.operations:
+        raise SystemExit("ERROR: Mattermost merged to zero operations; "
+                         "refusing to score an empty document as 0/20.")
+    return api
 
 
 def score(label, api, baseline):

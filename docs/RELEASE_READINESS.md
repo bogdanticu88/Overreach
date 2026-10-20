@@ -32,7 +32,7 @@ nothing is broken and no claim is overstated.
   second, <60 MB, no duplicate or search-explosion issues.
 - Baselines re-scored reproducibly: Gitea 17/20, Mattermost 13–15/20.
 - Scoping + precision fixes: a boundaries file removes all generic noise (Stripe
-  469→3, DO 246→21), and the three false-positive classes are fixed, lifting
+  469→3, DO 280→21), and the three false-positive classes are fixed, lifting
   scoped precision to Stripe 3/3 and DigitalOcean 20/21 by hand review.
 
 ## Soundness items

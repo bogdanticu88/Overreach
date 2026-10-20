@@ -21,12 +21,19 @@ inline for comparison.
 
 | Spec | Unscoped total | specific / generic | Scoped total | specific / generic | Eliminated | Scoped-only | Runtime | Peak RSS |
 |---|---|---|---|---|---|---|---|---|
-| Stripe | 469 (was 580) | 281 / 188 | **3** (was 7) | 3 / 0 | 469 | 3 | ~0.5 s | 59 MB |
-| DigitalOcean | 246 (was 315) | 63 / 183 | **21** (was 44) | 21 / 0 | 225 | 0 | ~1.0 s | 59 MB |
+| Stripe | 469 | 281 / 188 | **3** | 3 / 0 | 469 | 3 | ~0.4 s | 59 MB |
+| DigitalOcean | 280 | 97 / 183 | **21** | 21 / 0 | 259 | 0 | ~0.3 s | 45 MB |
+
+On DigitalOcean the 21 scoped findings are a subset of the unscoped set
+(eliminated 259 = 280 − 21, scoped-only 0). On Stripe they are not: the
+boundaries file's `untrusted_fields` seed 3 entry points the unscoped taint pass
+did not, so all 469 unscoped chains are eliminated and 3 scoped-only chains are
+introduced. "Eliminated" and "Scoped-only" are therefore counted independently,
+not as `unscoped − scoped`.
 
 Scoping removes every `generic` ("any tool reachable") finding and most specific
 ones, leaving only chains whose entry and terminal are both inside the agent's
-declared authority. "Scoped-only" (4 on Stripe) are chains introduced because the
+declared authority. "Scoped-only" (3 on Stripe) are chains introduced because the
 boundaries file's `untrusted_fields` declared entry points the unscoped taint
 pass did not seed. Runtime and memory are unchanged (sub-second, <60 MB).
 

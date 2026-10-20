@@ -15,10 +15,10 @@
   "chain_cap_hit": false,
   "warnings_count": 0,
   "warning_kinds": {},
-  "time_ingest_s": 0.021,
+  "time_ingest_s": 0.012,
   "time_infer_s": 0.001,
   "time_find_s": 0.0,
-  "time_total_s": 0.022,
-  "peak_rss_mib": 18.4,
+  "time_total_s": 0.013,
+  "peak_rss_mib": 18.5,
   "sample": []
 }

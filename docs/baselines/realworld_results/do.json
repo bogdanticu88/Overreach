@@ -5,29 +5,29 @@
   "source_hash": "fbb4a1293861afa3",
   "operations_parsed": 858,
   "fields_extracted": 4160,
-  "exit_fields": 106,
-  "chains_total": 315,
+  "exit_fields": 92,
+  "chains_total": 280,
   "chains_by_outcome": {
-    "data_theft": 119,
-    "takeover": 23,
-    "fraud": 16,
-    "destruction": 157
+    "data_theft": 90,
+    "takeover": 30,
+    "fraud": 2,
+    "destruction": 158
   },
   "chains_by_evidence": {
-    "hypothetical": 315
+    "hypothetical": 280
   },
-  "specific": 87,
-  "generic": 228,
+  "specific": 97,
+  "generic": 183,
   "duplicate_chain_ids": 0,
   "chain_cap_hit": false,
   "warnings_count": 1,
   "warning_kinds": {
     "spec uses oneOf/anyOf": 1
   },
-  "time_ingest_s": 0.193,
-  "time_infer_s": 0.037,
-  "time_find_s": 0.703,
-  "time_total_s": 0.934,
+  "time_ingest_s": 0.155,
+  "time_infer_s": 0.023,
+  "time_find_s": 0.075,
+  "time_total_s": 0.254,
   "peak_rss_mib": 44.6,
   "sample": [
     {
@@ -151,38 +151,18 @@
       "entry_count": 1
     },
     {
-      "id": "19dd25c83b30",
+      "id": "0b307b5fd91b",
       "outcome": "data_theft",
       "impact": 5,
       "plausibility": 0.75,
       "evidence": "hypothetical",
       "terminal_exit": true,
       "source": {
-        "op": "GET /v2/uptime/checks/{check_id}/alerts",
+        "op": "GET /v2/apps/{app_id}/alerts",
         "field": "description"
       },
       "path": [
-        "GET /v2/uptime/checks/{check_id}/alerts",
-        "PUT /v2/uptime/checks/{check_id}/alerts/{alert_id}"
-      ],
-      "boundaries": [
-        "untrusted text drives a privileged action"
-      ],
-      "entry_count": 1
-    },
-    {
-      "id": "54c23c5f9c5e",
-      "outcome": "data_theft",
-      "impact": 5,
-      "plausibility": 0.75,
-      "evidence": "hypothetical",
-      "terminal_exit": true,
-      "source": {
-        "op": "GET /v2/uptime/checks/{check_id}/alerts",
-        "field": "description"
-      },
-      "path": [
-        "GET /v2/uptime/checks/{check_id}/alerts",
+        "GET /v2/apps/{app_id}/alerts",
         "POST /v2/uptime/checks/{check_id}/alerts"
       ],
       "boundaries": [
@@ -191,19 +171,19 @@
       "entry_count": 1
     },
     {
-      "id": "9e133ecdebdc",
+      "id": "20a245f9cc3a",
       "outcome": "data_theft",
       "impact": 5,
       "plausibility": 0.75,
       "evidence": "hypothetical",
       "terminal_exit": true,
       "source": {
-        "op": "GET /v2/uptime/checks/{check_id}/alerts",
+        "op": "GET /v2/apps/{app_id}/alerts",
         "field": "description"
       },
       "path": [
-        "GET /v2/uptime/checks/{check_id}/alerts",
-        "PUT /v2/uptime/checks/{check_id}"
+        "GET /v2/apps/{app_id}/alerts",
+        "POST /v2/apps/{app_id}/alerts/{alert_id}/destinations"
       ],
       "boundaries": [
         "untrusted text drives a privileged action"
@@ -211,19 +191,19 @@
       "entry_count": 1
     },
     {
-      "id": "1aa2fca74f2e",
+      "id": "7e996db67f88",
       "outcome": "data_theft",
       "impact": 5,
       "plausibility": 0.75,
       "evidence": "hypothetical",
       "terminal_exit": true,
       "source": {
-        "op": "GET /v2/uptime/checks/{check_id}/alerts",
+        "op": "GET /v2/apps/{app_id}/alerts",
         "field": "description"
       },
       "path": [
-        "GET /v2/uptime/checks/{check_id}/alerts",
-        "POST /v2/uptime/checks"
+        "GET /v2/apps/{app_id}/alerts",
+        "PUT /v2/monitoring/alerts/{alert_uuid}"
       ],
       "boundaries": [
         "untrusted text drives a privileged action"
@@ -231,18 +211,18 @@
       "entry_count": 1
     },
     {
-      "id": "4ba2b37bf609",
+      "id": "a7fe2f887e7c",
       "outcome": "data_theft",
       "impact": 5,
       "plausibility": 0.75,
       "evidence": "hypothetical",
       "terminal_exit": true,
       "source": {
-        "op": "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "op": "GET /v2/apps/{app_id}/alerts",
         "field": "description"
       },
       "path": [
-        "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "GET /v2/apps/{app_id}/alerts",
         "PUT /v2/uptime/checks/{check_id}/alerts/{alert_id}"
       ],
       "boundaries": [
@@ -251,18 +231,38 @@
       "entry_count": 1
     },
     {
-      "id": "e70a813527b9",
+      "id": "c15dc554b658",
       "outcome": "data_theft",
       "impact": 5,
       "plausibility": 0.75,
       "evidence": "hypothetical",
       "terminal_exit": true,
       "source": {
-        "op": "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "op": "GET /v2/apps/{app_id}/alerts",
         "field": "description"
       },
       "path": [
-        "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "GET /v2/apps/{app_id}/alerts",
+        "POST /v2/monitoring/alerts"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "bf92a5f6ff2a",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/monitoring/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/monitoring/alerts",
         "POST /v2/uptime/checks/{check_id}/alerts"
       ],
       "boundaries": [
@@ -271,19 +271,19 @@
       "entry_count": 1
     },
     {
-      "id": "6bdb7a226dca",
+      "id": "658cb161150b",
       "outcome": "data_theft",
       "impact": 5,
       "plausibility": 0.75,
       "evidence": "hypothetical",
       "terminal_exit": true,
       "source": {
-        "op": "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "op": "GET /v2/monitoring/alerts",
         "field": "description"
       },
       "path": [
-        "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
-        "PUT /v2/uptime/checks/{check_id}"
+        "GET /v2/monitoring/alerts",
+        "POST /v2/apps/{app_id}/alerts/{alert_id}/destinations"
       ],
       "boundaries": [
         "untrusted text drives a privileged action"
@@ -291,19 +291,19 @@
       "entry_count": 1
     },
     {
-      "id": "f72120d1d94a",
+      "id": "9c7a6fa82201",
       "outcome": "data_theft",
       "impact": 5,
       "plausibility": 0.75,
       "evidence": "hypothetical",
       "terminal_exit": true,
       "source": {
-        "op": "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "op": "GET /v2/monitoring/alerts",
         "field": "description"
       },
       "path": [
-        "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
-        "POST /v2/uptime/checks"
+        "GET /v2/monitoring/alerts",
+        "PUT /v2/monitoring/alerts/{alert_uuid}"
       ],
       "boundaries": [
         "untrusted text drives a privileged action"
@@ -311,24 +311,24 @@
       "entry_count": 1
     },
     {
-      "id": "0bc40230f844",
+      "id": "9497fa67f359",
       "outcome": "data_theft",
       "impact": 5,
-      "plausibility": 0.5,
+      "plausibility": 0.75,
       "evidence": "hypothetical",
       "terminal_exit": true,
       "source": {
-        "op": "GET /v2/action-gateway/mcp-servers",
+        "op": "GET /v2/monitoring/alerts",
         "field": "description"
       },
       "path": [
-        "GET /v2/action-gateway/mcp-servers",
-        "POST /v2/action-gateway/connections"
+        "GET /v2/monitoring/alerts",
+        "PUT /v2/uptime/checks/{check_id}/alerts/{alert_id}"
       ],
       "boundaries": [
         "untrusted text drives a privileged action"
       ],
-      "entry_count": 54
+      "entry_count": 1
     }
   ]
 }
