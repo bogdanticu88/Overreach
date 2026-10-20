@@ -59,11 +59,14 @@ now fixed with regression tests (see the "review finding" commits):
 - **Process — CI did not run on the RC branch; scan comment overclaimed gating.**
   Both fixed.
 
-A re-review confirming these fixes is the outstanding gate. The condition is that
-**independent re-review** plus the documented non-blocking items below. It is not
-an unconditional PASS because scoped precision rests on a single reviewer's
-judgement and the roadmap threat classes are unmodelled; it is not a FAIL because
-nothing is broken and no claim is overstated.
+PR #1 opened `v0.1.0-rc` into `master`; GitHub Actions ran and all checks
+(`test`, `scan`, `overreach`) passed, so the "CI running on GitHub" condition is
+met. The one remaining condition is integration-time: a real outbound sender must
+honour the pinning contract (connect to a validated IP, Host/SNI = hostname, no
+re-resolve, revalidate redirects) — Overreach ships none, and the contract fails
+closed without one. It is not an unconditional PASS because that integration and
+the single-reviewer precision judgement remain; it is not a FAIL because nothing
+is broken and no claim is overstated.
 
 ## What the evidence shows
 
