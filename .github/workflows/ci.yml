@@ -5,6 +5,7 @@ on:
   push:
     branches: [master, main]
 
+# Least privilege: CI only needs to read the repository.
 permissions:
   contents: read
 
@@ -17,7 +18,18 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
-      - name: Type-check
+      - name: Lint (ruff)
+        run: python -m ruff check src tests
+      - name: Type-check (mypy, strict)
         run: python -m mypy src/overreach
       - name: Tests
         run: python -m pytest -q
+      - name: Security lint (bandit)
+        run: python -m bandit -r src/overreach
+      - name: Dependency audit (runtime deps)
+        # Audit what users install (the single runtime dependency). The
+        # demo/dev extras are developer-only and not gated here. No findings
+        # are suppressed; if this step fails, a dependency needs bumping.
+        run: |
+          printf 'PyYAML>=6.0\n' > "$RUNNER_TEMP/runtime-requirements.txt"
+          python -m pip_audit -r "$RUNNER_TEMP/runtime-requirements.txt"

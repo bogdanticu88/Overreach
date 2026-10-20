@@ -22,7 +22,8 @@ Issues = "https://github.com/bogdanticu88/OverReach/issues"
 
 [project.optional-dependencies]
 demo = ["fastapi>=0.110", "httpx>=0.27"]
-dev = ["pytest", "mypy", "types-PyYAML", "fastapi>=0.110", "httpx>=0.27"]
+dev = ["pytest", "mypy", "types-PyYAML", "ruff", "bandit", "pip-audit",
+       "fastapi>=0.110", "httpx>=0.27"]
 
 [project.scripts]
 overreach = "overreach.cli:main"
