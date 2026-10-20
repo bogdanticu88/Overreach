@@ -88,7 +88,11 @@ def infer_operation(op: Operation) -> Operation:
     if any(w in blob for w in _DESTROY_WORDS) and method != "get":
         effects.append(Effect(EffectKind.DELETE, target, Provenance.INFERRED, 0.6,
                               "destructive wording"))
-    if any(w in blob for w in _IDENTITY_WORDS):
+    # Identity and money effects are state changes, so they require a writing
+    # method. A GET on a resource merely *named* "token"/"payment" is a read, not
+    # an identity change or a money movement (this removed a class of false
+    # fraud/takeover terminals on Stripe and DigitalOcean reads).
+    if method != "get" and any(w in blob for w in _IDENTITY_WORDS):
         effects.append(Effect(EffectKind.CHANGE_IDENTITY, target,
                               Provenance.INFERRED, 0.55, "identity-related wording"))
     # Adding credential/key material (non-GET) is persistent access.
@@ -96,7 +100,7 @@ def infer_operation(op: Operation) -> Operation:
         effects.append(Effect(EffectKind.CHANGE_IDENTITY, target,
                               Provenance.INFERRED, 0.6,
                               "adds credential/key material (persistent access)"))
-    if any(w in blob for w in _MONEY_WORDS):
+    if method != "get" and any(w in blob for w in _MONEY_WORDS):
         effects.append(Effect(EffectKind.MOVE_MONEY, target, Provenance.INFERRED,
                               0.5, "money-related wording"))
     if any(w in blob for w in _IRREVERSIBLE_WORDS) and method != "get":
