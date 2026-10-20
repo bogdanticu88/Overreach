@@ -14,9 +14,30 @@ installs cleanly, and the tool demonstrably finds defensible composed attack
 paths on unfamiliar APIs (the DigitalOcean MCP/credential family) while staying
 quiet on a trivial control (Petstore: 0 findings).
 
-The remaining condition is **independent review** (the reviewer package exists
-for exactly this) plus the documented non-blocking items below. It is not an
-unconditional PASS because scoped precision rests on a single reviewer's
+### Independent review round (resolved)
+
+An independent reviewer examined `v0.1.0-rc` at `72d3cda` and returned a FAIL
+with one High, three Medium, and one Low finding, plus two process notes. All are
+now fixed with regression tests (see the "review finding" commits):
+
+- **High — SSRF guard accepted non-dotted-quad loopback** (e.g. decimal
+  `2130706433`). Fixed: literal IPs recognised in every encoding; the guarded
+  transport now resolves hostnames and refuses non-public answers.
+- **Medium — spec size limit checked after full read.** Fixed: `load_path`
+  rejects by on-disk size first.
+- **Medium — chain cap bypassed + O(n²) adjacency.** Fixed: the cap is enforced
+  in the cross-domain loop; adjacency is built from an inverted index.
+- **Medium — benchmark artifacts stale / silent bad-input scoring.** Fixed:
+  result JSONs regenerated, counts reconciled across docs, `rescore.py` warns and
+  refuses to score an empty merge.
+- **Low — hyphenated paths broke untrusted-field matching.** Fixed: segments
+  normalised to one underscored noun.
+- **Process — CI did not run on the RC branch; scan comment overclaimed gating.**
+  Both fixed.
+
+A re-review confirming these fixes is the outstanding gate. The condition is that
+**independent re-review** plus the documented non-blocking items below. It is not
+an unconditional PASS because scoped precision rests on a single reviewer's
 judgement and the roadmap threat classes are unmodelled; it is not a FAIL because
 nothing is broken and no claim is overstated.
 
