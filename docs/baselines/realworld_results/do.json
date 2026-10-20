@@ -1,0 +1,334 @@
+{
+  "spec": "/tmp/claude-0/-home-claude/e9d66056-8566-55d9-8f58-1e4ebee14b01/scratchpad/specs/do_bundled.json",
+  "title": "DigitalOcean API",
+  "version": "2.0",
+  "source_hash": "fbb4a1293861afa3",
+  "operations_parsed": 858,
+  "fields_extracted": 4160,
+  "exit_fields": 92,
+  "chains_total": 280,
+  "chains_by_outcome": {
+    "data_theft": 90,
+    "takeover": 30,
+    "fraud": 2,
+    "destruction": 158
+  },
+  "chains_by_evidence": {
+    "hypothetical": 280
+  },
+  "specific": 97,
+  "generic": 183,
+  "duplicate_chain_ids": 0,
+  "chain_cap_hit": false,
+  "warnings_count": 1,
+  "warning_kinds": {
+    "spec uses oneOf/anyOf": 1
+  },
+  "time_ingest_s": 0.155,
+  "time_infer_s": 0.023,
+  "time_find_s": 0.075,
+  "time_total_s": 0.254,
+  "peak_rss_mib": 44.6,
+  "sample": [
+    {
+      "id": "cf2e194b215e",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/action-gateway/mcp-servers/{server_ref}",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/action-gateway/mcp-servers/{server_ref}",
+        "POST /v2/action-gateway/mcp-servers"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "bf9ececf76df",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/agents/configs",
+        "field": "log_message_timestamp_type"
+      },
+      "path": [
+        "GET /v2/agents/configs",
+        "PATCH /v2/databases/{database_cluster_uuid}/config"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "18663103a58d",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/agents/configs/{config_id}",
+        "field": "log_message_timestamp_type"
+      },
+      "path": [
+        "GET /v2/agents/configs/{config_id}",
+        "PATCH /v2/databases/{database_cluster_uuid}/config"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "46f3adb0f326",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/databases/{database_cluster_uuid}/config",
+        "field": "log_message_timestamp_type"
+      },
+      "path": [
+        "GET /v2/databases/{database_cluster_uuid}/config",
+        "PATCH /v2/databases/{database_cluster_uuid}/config"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "3c788c753d23",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/databases/{database_cluster_uuid}/schema-registry/config",
+        "field": "log_message_timestamp_type"
+      },
+      "path": [
+        "GET /v2/databases/{database_cluster_uuid}/schema-registry/config",
+        "PATCH /v2/databases/{database_cluster_uuid}/config"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "390639990b5d",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/databases/{database_cluster_uuid}/schema-registry/config/{subject_name}",
+        "field": "log_message_timestamp_type"
+      },
+      "path": [
+        "GET /v2/databases/{database_cluster_uuid}/schema-registry/config/{subject_name}",
+        "PATCH /v2/databases/{database_cluster_uuid}/config"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "0b307b5fd91b",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/apps/{app_id}/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/apps/{app_id}/alerts",
+        "POST /v2/uptime/checks/{check_id}/alerts"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "20a245f9cc3a",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/apps/{app_id}/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/apps/{app_id}/alerts",
+        "POST /v2/apps/{app_id}/alerts/{alert_id}/destinations"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "7e996db67f88",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/apps/{app_id}/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/apps/{app_id}/alerts",
+        "PUT /v2/monitoring/alerts/{alert_uuid}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "a7fe2f887e7c",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/apps/{app_id}/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/apps/{app_id}/alerts",
+        "PUT /v2/uptime/checks/{check_id}/alerts/{alert_id}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "c15dc554b658",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/apps/{app_id}/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/apps/{app_id}/alerts",
+        "POST /v2/monitoring/alerts"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "bf92a5f6ff2a",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/monitoring/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/monitoring/alerts",
+        "POST /v2/uptime/checks/{check_id}/alerts"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "658cb161150b",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/monitoring/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/monitoring/alerts",
+        "POST /v2/apps/{app_id}/alerts/{alert_id}/destinations"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "9c7a6fa82201",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/monitoring/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/monitoring/alerts",
+        "PUT /v2/monitoring/alerts/{alert_uuid}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "9497fa67f359",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/monitoring/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/monitoring/alerts",
+        "PUT /v2/uptime/checks/{check_id}/alerts/{alert_id}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    }
+  ]
+}

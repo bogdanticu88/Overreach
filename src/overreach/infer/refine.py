@@ -33,11 +33,15 @@ _PAGINATION = frozenset((
     "page", "per_page", "perpage", "limit", "offset", "cursor", "size",
     "page_size", "pagesize", "page_token", "pagetoken", "max_results",
 ))
-# Specific identity objects that make a change-identity guess credible.
+# Specific identity objects/words that make a weak change-identity guess
+# credible. The bare verbs "transfer"/"rename" are intentionally absent: they are
+# an identity signal only when the inference rules gate them on an ownable
+# object, and those rules emit at confidence >= 0.6, which the refiner keeps
+# regardless of this set.
 _IDENTITY_SPECIFIC = frozenset((
     "email", "password", "token", "secret", "role", "permission",
     "membership", "credential", "apikey", "2fa", "mfa",
-    "collaborator", "scheme", "promote", "demote", "transfer", "rename",
+    "collaborator", "scheme", "promote", "demote",
 ))
 _MODEL_MAX_CONFIDENCE: Confidence = 0.75
 
@@ -87,16 +91,18 @@ class OfflineRefiner:
             effects.append(Effect(EffectKind.COST, target, Provenance.INFERRED,
                                   0.5, "list without pagination can be unbounded"))
 
-        # 3) Boost a change-identity guess when a specific identity object is
-        #    present, and drop it when only a weak generic word triggered it.
+        # 3) Keep a change-identity guess when a specific identity object is
+        #    present (and boost it); drop only a weak generic word guess. Effects
+        #    the rules already emit at >= 0.6 (credential/key addition, gated
+        #    ownership transfer) are specific by construction and are kept.
         has_specific = any(o in _IDENTITY_SPECIFIC for o in op.objects) or \
             any(w in blob for w in _IDENTITY_SPECIFIC)
         refined: list[Effect] = []
         for e in effects:
             if e.kind == EffectKind.CHANGE_IDENTITY:
-                if not has_specific:
-                    continue  # drop a weak identity guess
-                if e.confidence < 0.7:
+                if e.confidence < 0.6 and not has_specific:
+                    continue  # drop a weak generic identity guess
+                if has_specific and e.confidence < 0.7:
                     e = Effect(e.kind, e.target, e.provenance, 0.7,
                                e.reason + "; specific identity object")
             refined.append(e)

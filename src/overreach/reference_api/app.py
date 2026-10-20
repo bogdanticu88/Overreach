@@ -1,19 +1,21 @@
 """Reference API implementation (FastAPI).
 
-State is in-memory and reset per process. Nothing here talks to the real
-internet except delivering a webhook to a URL the caller supplies, which is the
-whole point of the exfiltration chain; the validation harness points that at an
-in-process sink.
+State is in-memory and reset per process. Webhook delivery goes through a
+Transport (see ``transport.py``); the default CaptureTransport records payloads
+in memory and never opens a socket, so running or testing the reference API
+cannot reach the real network or an internal service. Real delivery is a
+separate, SSRF-guarded, opt-in transport that is never wired here.
 """
 from __future__ import annotations
 
 import secrets
 from typing import Any
 
-import httpx
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
+
+from overreach.reference_api.transport import CaptureTransport, Transport
 
 bearer = HTTPBearer(auto_error=False)
 
@@ -24,13 +26,25 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
-# In-memory state
+# In-memory state and delivery transport
 # ---------------------------------------------------------------------------
 _STATE: dict[str, Any] = {}
+_TRANSPORT: Transport = CaptureTransport()
 
 
 def get_state() -> dict[str, Any]:
     return _STATE
+
+
+def get_transport() -> Transport:
+    return _TRANSPORT
+
+
+def set_transport(transport: Transport) -> None:
+    """Swap the delivery transport. Default is offline-safe CaptureTransport;
+    a real, SSRF-guarded transport can be injected deliberately."""
+    global _TRANSPORT
+    _TRANSPORT = transport
 
 
 def reset_state() -> None:
@@ -42,8 +56,8 @@ def reset_state() -> None:
         "user_email": "victim@example.com",
         "reset_tokens": [],
         "notifications": [],
-        "sink": {},            # token -> list of received payloads
     })
+    _TRANSPORT.reset()
 
 
 reset_state()
@@ -133,15 +147,11 @@ def trigger_push(owner: str, repo: str, _: str = Depends(_auth)) -> dict[str, An
     delivered = 0
     for url in _STATE["hooks"].get((owner, repo), []):
         payload = {"event": "push", "repo": repo, "files": files}
-        try:
-            if url.startswith("sink://"):
-                token = url.split("sink://", 1)[1]
-                _STATE["sink"].setdefault(token, []).append(payload)
-            else:  # pragma: no cover - real delivery not used in tests
-                httpx.post(url, json=payload, timeout=2.0)
+        # Delivery goes through the transport. The default records in memory and
+        # never touches the network, so no destination the caller supplies can
+        # cause a real outbound request.
+        if _TRANSPORT.deliver(url, payload):
             delivered += 1
-        except Exception:
-            pass
     return {"ok": True, "delivered": delivered}
 
 
@@ -178,10 +188,6 @@ def list_notifications(_: str = Depends(_auth)) -> list[dict[str, Any]]:
     return out
 
 
-# ---------------------------------------------------------------------------
-# Attacker-controlled sink (excluded from the public schema)
-# ---------------------------------------------------------------------------
-@app.get("/_sink/{token}", include_in_schema=False)
-def sink_read(token: str) -> list[dict[str, Any]]:
-    out: list[dict[str, Any]] = _STATE["sink"].get(token, [])
-    return out
+# The attacker-controlled destination is observed through the transport's
+# capture log (see validate_* in overreach.replay), not through an in-app
+# endpoint, so there is nothing network-facing to read here.

@@ -1,15 +1,15 @@
 [project]
 name = "overreach-scan"
-version = "0.0.1"
+version = "0.1.0"
 description = "Overreach: find chains of legitimate API operations an AI agent can be led into, that combine into a harmful outcome."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "AGPL-3.0-only"
 authors = [{ name = "Mihai-Bogdan Ticu" }]
 keywords = ["security", "ai-agents", "api-security", "openapi", "mcp", "appsec"]
-dependencies = ["PyYAML>=6.0", "networkx>=3.0"]
+dependencies = ["PyYAML>=6.0"]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Topic :: Security",
   "Programming Language :: Python :: 3.12",
@@ -22,7 +22,8 @@ Issues = "https://github.com/bogdanticu88/OverReach/issues"
 
 [project.optional-dependencies]
 demo = ["fastapi>=0.110", "httpx>=0.27"]
-dev = ["pytest", "mypy", "types-PyYAML", "fastapi>=0.110", "httpx>=0.27"]
+dev = ["pytest", "mypy", "types-PyYAML", "ruff", "bandit", "pip-audit",
+       "fastapi>=0.110", "httpx>=0.27"]
 
 [project.scripts]
 overreach = "overreach.cli:main"
@@ -30,6 +31,23 @@ overreach = "overreach.cli:main"
 [tool.mypy]
 strict = true
 python_version = "3.12"
+
+[tool.ruff]
+target-version = "py312"
+src = ["src", "tests"]
+line-length = 100
+
+[tool.ruff.lint]
+# Pyflakes (F), import order (I), pycodestyle (E), pyupgrade (UP) and
+# bugbear (B) are enforced. Stylistic families (TRY/SIM/ISC/BLE) are not
+# enabled: the few patterns they flag here are deliberate (a blanket except
+# guarding hostile input, a ValueError for a malformed file, an intentional
+# multi-line string in a boundary label).
+select = ["E", "F", "I", "UP", "B"]
+ignore = [
+  "B008",   # FastAPI's documented pattern is Depends() in argument defaults.
+  "UP042",  # str+Enum is intentional; StrEnum would change str() output we format on.
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

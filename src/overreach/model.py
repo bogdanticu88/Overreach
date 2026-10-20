@@ -57,7 +57,7 @@ class Effect:
     confidence: Confidence
     reason: str                      # short human-readable justification
 
-    def downgraded_to(self, cap: Confidence) -> "Effect":
+    def downgraded_to(self, cap: Confidence) -> Effect:
         """Return a copy whose confidence is no higher than ``cap``."""
         if self.confidence <= cap:
             return self
@@ -71,6 +71,11 @@ class Field:
     origin: Origin
     is_exit: bool = False            # accepts a URL, email, callback or destination
     schema_type: str = ""
+    # True only if the schema guarantees this field in every valid request (in
+    # the object's "required" list, not reached through a oneOf/anyOf branch).
+    # Parser coverage is not semantic presence: a field extracted from a
+    # composition may appear in only some valid requests.
+    required: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,7 +94,7 @@ class Operation:
     def key(self) -> str:
         return f"{self.method.upper()} {self.path}"
 
-    def with_effects(self, effects: tuple[Effect, ...]) -> "Operation":
+    def with_effects(self, effects: tuple[Effect, ...]) -> Operation:
         return Operation(
             self.op_id, self.method, self.path, self.tags, self.summary,
             self.auth_schemes, self.fields, effects, self.objects,

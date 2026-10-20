@@ -27,12 +27,17 @@ def chain_to_dict(ch: Chain) -> dict[str, object]:
 
 def option_to_dict(opt: Option) -> dict[str, object]:
     return {
-        "chains_broken": opt.chains_broken,
+        # Conditional prevention assumes each enforcing control is actually
+        # enforced; observed_prevention is True only after an enforced retest.
+        "chains_prevented_conditional": opt.chains_prevented,
+        "observed_prevention": opt.verified,
+        "chains_covered": opt.chains_covered,
         "chains_total": opt.chains_total,
         "workflow_hits": opt.workflow_hits,
         "total_effort": opt.total_effort,
         "controls": [{"kind": c.kind.value, "target": c.target,
-                      "effort": c.effort, "description": c.description}
+                      "effort": c.effort, "enforces": c.enforces,
+                      "description": c.description}
                      for c in opt.controls],
     }
 
@@ -88,7 +93,7 @@ def to_sarif(chains: list[Chain], spec_path: str = "openapi.json") -> dict[str, 
         "runs": [{
             "tool": {"driver": {
                 "name": "overreach",
-                "informationUri": "https://github.com/bogdanticu88/overreach",
+                "informationUri": "https://github.com/bogdanticu88/OverReach",
                 "version": __version__,
                 "rules": rules,
             }},
@@ -110,11 +115,12 @@ def to_html(chains: list[Chain], options: list[Option], title: str) -> str:
         lvl = _level(c.impact)
         steps = " &rarr; ".join(_esc(s.op_key) for s in c.steps)
         bnds = "".join(f"<li>{_esc(b)}</li>" for b in c.boundaries)
+        outcome_label = c.outcome.value.replace("_", " ")
         rows.append(f"""
         <div class="finding">
           <div class="head">
             <span class="num">#{i}</span>
-            <span class="pill" style="background:{badge[lvl]}">{c.outcome.value.replace('_',' ')}</span>
+            <span class="pill" style="background:{badge[lvl]}">{outcome_label}</span>
             <span class="tag">{'generic' if c.generic else 'specific'}</span>
             <span class="ev">evidence: {c.evidence.value}</span>
             <span class="id">{c.chain_id}</span>
@@ -131,8 +137,9 @@ def to_html(chains: list[Chain], options: list[Option], title: str) -> str:
                        for c in o.controls)
         fixes.append(f"""
         <div class="opt">
-          <div class="opthead">Option {j}: breaks {o.chains_broken}/{o.chains_total}
-            chains &middot; {o.workflow_hits} workflow hit(s) &middot; effort {o.total_effort}</div>
+          <div class="opthead">Option {j}: would prevent {o.chains_prevented}/{o.chains_total}
+            chains (conditional on enforcement; covers {o.chains_covered}) &middot;
+            {o.workflow_hits} workflow hit(s) &middot; effort {o.total_effort}</div>
           <ul>{ctls}</ul>
         </div>""")
 

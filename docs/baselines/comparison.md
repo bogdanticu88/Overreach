@@ -62,3 +62,12 @@ Without a boundaries file the finder reports cross-domain reach from every
 untrusted entry, so raw counts are high (Gitea ~400). A boundaries file scopes
 these to what the agent can actually call; the recall above is measured on the
 unscoped run to match the baselines, which also assume broad access.
+
+## Note on recency (2026-10-20)
+
+The recall figures above were measured before the Phase-1 precision tuning. A
+reproducible re-score has since been done — see `baseline_rescore.md` and
+`rescore.py`. Result: Gitea reproduces 17/20 exactly (after a credential/key
+effect fix that recovered a taint-change regression for the right reason); the
+Mattermost figure is 13–15/20 depending on terminal-map strictness. The scorer
+and per-chain terminal maps are committed for inspection.

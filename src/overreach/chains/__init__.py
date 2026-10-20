@@ -12,7 +12,7 @@ the replay harness's job.
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
 from overreach.boundaries import Boundaries
@@ -30,6 +30,14 @@ _CONTAINER_NOUNS = frozenset((
     "repo", "repositorie", "repository", "org", "organization", "organisation",
     "user", "team", "group", "project", "owner", "enterprise", "admin",
     "account", "workspace", "channel", "namespace",
+))
+
+# Communication-surface objects: ones a different party can read, so writing
+# private data into them is a genuine exfiltration sink. Used to keep the
+# sink-writer terminal from firing on self-read config objects.
+_COMM_OBJECTS = frozenset((
+    "comment", "message", "post", "issue", "review", "note", "discussion",
+    "thread", "ticket", "reply", "chat", "mail", "email",
 ))
 
 
@@ -74,6 +82,7 @@ class Chain:
     evidence: Evidence = Evidence.HYPOTHETICAL
     generic: bool = False            # cross-domain injected-agent reach
     entry_count: int = 1             # how many untrusted entries reach the terminal
+    terminal_exit: bool = False      # terminal makes a caller-named outbound request
 
     @property
     def chain_id(self) -> str:
@@ -116,6 +125,12 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
     by_key = api.by_key()
     scoped = boundaries is not None and boundaries.allowed_ops is not None
 
+    # Operations that make a caller-named outbound request (a webhook-style
+    # exit). Only these are preventable by an egress allowlist; a cross-tenant
+    # read or a reader-visible-sink write exfiltrates by other means.
+    egress_ops = {op.key for op in api.operations
+                  if any(e.kind == EffectKind.SEND_OUT for e in op.effects)}
+
     def allowed(op_key: str) -> bool:
         return boundaries.allows(op_key) if boundaries else True
 
@@ -152,11 +167,16 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
     # they only become terminals under an explicit tenant boundary.
     # Exfiltration sinks. The writer side of a taint link writes free text to
     # an object that others read, so an agent can be steered to write private
-    # data there (a comment, a message) where the attacker reads it. This is a
-    # second exfiltration mechanism beyond caller-named exit fields.
+    # data there where the attacker reads it. This is a second exfiltration
+    # mechanism beyond caller-named exit fields, but it is only a trust-boundary
+    # crossing when the object is a communication surface a different party can
+    # read (a comment, message, post, issue). Writing a config object's
+    # description that the same operator reads back is not exfiltration, so the
+    # sink is restricted to communication-surface objects rather than every
+    # written-and-read object.
     sink_writers: set[str] = set()
     for lk in links:
-        if allowed(lk.writer):
+        if allowed(lk.writer) and lk.obj in _COMM_OBJECTS:
             terminals.setdefault(lk.writer, (Outcome.DATA_THEFT, 4, 0.6))
             sink_writers.add(lk.writer)
 
@@ -181,12 +201,22 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
             freq[o] = freq.get(o, 0) + 1
     container = _CONTAINER_NOUNS | {o for o, n in freq.items() if n > _MAX_FANOUT}
 
-    def shares(a: Operation, b: Operation) -> bool:
-        return bool((set(a.objects) & set(b.objects)) - container)
-
-    adj: dict[str, list[Operation]] = {op.key: [] for op in ops}
-    for a in ops:
-        adj[a.key] = [b for b in ops if a.key != b.key and shares(a, b)]
+    # Build adjacency from an inverted index (object noun -> operations that name
+    # it) instead of comparing every operation pair. Container nouns are skipped,
+    # and a dynamic container is any noun shared by more than _MAX_FANOUT
+    # operations, so each group is small and the total work is bounded well below
+    # the O(n^2) all-pairs comparison.
+    by_obj: dict[str, list[Operation]] = {}
+    for op in ops:
+        for o in set(op.objects):
+            if o not in container:
+                by_obj.setdefault(o, []).append(op)
+    adj: dict[str, set[str]] = {op.key: set() for op in ops}
+    for group in by_obj.values():
+        for a in group:
+            for b in group:
+                if a.key != b.key:
+                    adj[a.key].add(b.key)
 
     chains: list[Chain] = []
     seen: set[str] = set()
@@ -196,7 +226,8 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
             return
         out, impact, tconf = terminals[path[-1].op_key]
         ch = _make_chain(path, path[0].op_key, entry_field[path[0].op_key],
-                         out, impact, min(conf, tconf), by_key)
+                         out, impact, min(conf, tconf), by_key,
+                         terminal_exit=path[-1].op_key in egress_ops)
         if ch.chain_id not in seen:
             seen.add(ch.chain_id)
             chains.append(ch)
@@ -210,6 +241,8 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
     #    untrusted entries can reach it. This is where a boundaries file later
     #    narrows "any entry" to "entries the agent's role can actually touch".
     for tkey, (out, impact, tconf) in terminals.items():
+        if len(chains) >= _MAX_CHAINS:
+            break
         reachers = [e for e in entry_keys if e != tkey]
         if not reachers:
             continue
@@ -231,6 +264,7 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
             impact=impact, plausibility=0.65 if scoped else 0.5,
             min_confidence=round(min_conf, 2),
             generic=not scoped, entry_count=len(reachers),
+            terminal_exit=tkey in egress_ops,
         )
         if ch.chain_id not in seen:
             seen.add(ch.chain_id)
@@ -255,10 +289,12 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
                 continue
             if len(path) >= max_depth:
                 continue
-            for nxt in adj[cur.key]:
-                if any(s.op_key == nxt.key for s in path):
+            for nxt_key in adj[cur.key]:
+                if any(s.op_key == nxt_key for s in path):
                     continue
-                step = Step(nxt.key, f"shares data with {cur.objects[-1] if cur.objects else 'prior step'}")
+                nxt = by_key[nxt_key]
+                shared = cur.objects[-1] if cur.objects else "prior step"
+                step = Step(nxt_key, f"shares data with {shared}")
                 stack.append((nxt, path + (step,), min(conf, _path_conf(nxt))))
     # Keep only the shortest chain to each distinct (entry, terminal, outcome):
     # a reader does not need twenty variations of the same end, just the
@@ -299,7 +335,7 @@ def _boundaries(steps: tuple[Step, ...], by_key: dict[str, Operation],
 
 def _make_chain(path: tuple[Step, ...], entry: str, field_name: str,
                 outcome: Outcome, impact: int, min_conf: float,
-                by_key: dict[str, Operation]) -> Chain:
+                by_key: dict[str, Operation], *, terminal_exit: bool = False) -> Chain:
     # Plausibility: shorter chains and fewer identity switches are more likely
     # for an agent to walk. Heuristic placeholder until a model scores it.
     length_penalty = 0.15 * (len(path) - 1)
@@ -308,4 +344,5 @@ def _make_chain(path: tuple[Step, ...], entry: str, field_name: str,
         steps=path, source_op=entry, source_field=field_name, outcome=outcome,
         boundaries=_boundaries(path, by_key), impact=impact,
         plausibility=round(plausibility, 2), min_confidence=round(min_conf, 2),
+        terminal_exit=terminal_exit,
     )
