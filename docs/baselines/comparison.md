@@ -62,3 +62,13 @@ Without a boundaries file the finder reports cross-domain reach from every
 untrusted entry, so raw counts are high (Gitea ~400). A boundaries file scopes
 these to what the agent can actually call; the recall above is measured on the
 unscoped run to match the baselines, which also assume broad access.
+
+## Note on recency (2026-10-20)
+
+The recall figures above were measured before the Phase-1 precision tuning (the
+lazy `$ref` resolver and the tightened taint free-text hints, which dropped
+`name`/`title`/`subject`). Recall here is matched by terminal operation, and the
+recovered families rely on strong free-text entries (`body`, `comment`,
+`description`) that the tuning kept, so the figures are expected to hold; a
+re-score against the Gitea and Mattermost specs is a tracked next step and is not
+yet reflected here.
