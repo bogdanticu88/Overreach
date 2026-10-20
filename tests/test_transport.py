@@ -63,7 +63,7 @@ def test_default_transport_is_offline_and_never_sends():
 
 def test_guarded_transport_refuses_unsafe_and_makes_no_call():
     calls: list[str] = []
-    t = GuardedHttpTransport(sender=lambda dest, payload: calls.append(dest))
+    t = GuardedHttpTransport(sender=lambda dest, payload, ip: calls.append(dest))
     assert t.deliver("http://169.254.169.254/x", {"a": 1}) is False
     assert t.deliver("http://10.0.0.1/x", {"a": 1}) is False
     assert t.deliver("http://2130706433/x", {"a": 1}) is False   # decimal loopback
@@ -72,20 +72,41 @@ def test_guarded_transport_refuses_unsafe_and_makes_no_call():
                          "http://2130706433/x"]
 
 
-def test_guarded_transport_sends_only_to_public():
+def test_guarded_transport_sends_only_to_public_and_pins_the_ip():
     # Inject a resolver so the test does no real DNS; example.com -> a public IP.
-    calls: list[tuple[str, dict]] = []
-    t = GuardedHttpTransport(sender=lambda dest, payload: calls.append((dest, payload)),
+    calls: list[tuple[str, dict, str]] = []
+    t = GuardedHttpTransport(sender=lambda dest, payload, ip: calls.append((dest, payload, ip)),
                              resolver=lambda host: ["93.184.216.34"])
     assert t.deliver("https://example.com/hook", {"ok": True}) is True
-    assert calls == [("https://example.com/hook", {"ok": True})]
+    # The sender is handed the validated IP to pin to, not just the URL.
+    assert calls == [("https://example.com/hook", {"ok": True}, "93.184.216.34")]
+    assert t.pinned == [("https://example.com/hook", "93.184.216.34")]
+
+
+def test_guarded_transport_pins_against_dns_rebinding():
+    # Rebinding attempt: the guard's lookup returns a public IP, but a sender
+    # that re-resolved at connect time would get loopback. Because the guard
+    # passes the validated IP and the sender must use it, the sender connects to
+    # the validated public address, never to loopback.
+    lookups = iter([["93.184.216.34"], ["127.0.0.1"]])  # guard sees public, next=loopback
+    connected: list[str] = []
+
+    def rebinding_resolver(host):
+        return next(lookups)
+
+    def pinning_sender(url, payload, ip):
+        connected.append(ip)        # a correct sender connects to the pinned ip
+
+    t = GuardedHttpTransport(sender=pinning_sender, resolver=rebinding_resolver)
+    assert t.deliver("https://rebind.example/x", {"a": 1}) is True
+    assert connected == ["93.184.216.34"]        # the validated address, not loopback
 
 
 def test_guarded_transport_refuses_hostname_resolving_to_internal():
     # A hostname whose A record points at an internal address must be refused
     # (DNS-based SSRF), even though the literal check could not catch it.
     calls: list[str] = []
-    t = GuardedHttpTransport(sender=lambda dest, payload: calls.append(dest),
+    t = GuardedHttpTransport(sender=lambda dest, payload, ip: calls.append(dest),
                              resolver=lambda host: ["10.0.0.7"])
     assert t.deliver("https://sneaky.internal.example/x", {"a": 1}) is False
     assert calls == []
@@ -94,6 +115,6 @@ def test_guarded_transport_refuses_hostname_resolving_to_internal():
 
 def test_guarded_transport_refuses_when_any_resolved_ip_is_internal():
     # A mixed answer (one public, one internal) is refused.
-    t = GuardedHttpTransport(sender=lambda d, p: None,
+    t = GuardedHttpTransport(sender=lambda d, p, ip: None,
                              resolver=lambda host: ["93.184.216.34", "127.0.0.1"])
     assert t.deliver("https://mixed.example/x", {"a": 1}) is False
