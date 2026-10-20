@@ -14,10 +14,15 @@ authorization). Neither invents permissions.
 
 ## Effect of scoping
 
+Numbers below are **after** the three false-positive fixes landed (the
+communication-surface sink restriction, ownership-gated transfer/rename, and the
+provider/redirect/subject-email egress exclusion). The pre-fix figures are noted
+inline for comparison.
+
 | Spec | Unscoped total | specific / generic | Scoped total | specific / generic | Eliminated | Scoped-only | Runtime | Peak RSS |
 |---|---|---|---|---|---|---|---|---|
-| Stripe | 580 | 364 / 216 | **7** | 7 / 0 | 577 | 4 | ~0.5 s | 59 MB |
-| DigitalOcean | 315 | 91 / 224 | **44** | 44 / 0 | 271 | 0 | ~1.0 s | 59 MB |
+| Stripe | 469 (was 580) | 281 / 188 | **3** (was 7) | 3 / 0 | 469 | 3 | ~0.5 s | 59 MB |
+| DigitalOcean | 246 (was 315) | 63 / 183 | **21** (was 44) | 21 / 0 | 225 | 0 | ~1.0 s | 59 MB |
 
 Scoping removes every `generic` ("any tool reachable") finding and most specific
 ones, leaving only chains whose entry and terminal are both inside the agent's
@@ -47,10 +52,10 @@ terminal is a genuinely harmful effect the role's authority supports —
 contacted), so these are defensibility judgements, and the precision figures are
 estimates, not validated rates.
 
-| Spec | Scoped | Plausible | Weak | Est. precision |
-|---|---|---|---|---|
-| Stripe | 7 | 3 | 4 | ~43% |
-| DigitalOcean | 44 | 22 | 22 | ~50% |
+| Spec | Scoped | Plausible | Weak | Est. precision | (pre-fix) |
+|---|---|---|---|---|---|
+| Stripe | 3 | 3 | 0 | 100% | (was ~43%) |
+| DigitalOcean | 21 | 20 | 1 | ~95% | (was ~50%) |
 
 ### Plausible findings (examples)
 - Stripe: injected text in a charge/customer description steering a support agent
@@ -61,23 +66,22 @@ estimates, not validated rates.
   caller-named endpoint (exfil / backdoor), or to `POST /v2/gen-ai/.../keys` /
   `api_keys` (persistent credential).
 
-### False-positive patterns in the WEAK set (reported, not fixed)
-- **Same-domain create via the sink-writer heuristic** (17 of DO's weak): `GET
-  toolbelts -> POST toolbelts`, `GET scenario_sets -> POST scenario_sets`, etc.
-  Creating another object in the same domain whose description is read back is
-  flagged as data theft, but it is not exfiltration.
-- **"transfer"/"session" word takeover** (5 of DO's weak): `-> POST
-  /v2/agents/sessions/{id}/workspace/transfers` is tagged takeover because
-  "transfer" is an identity/irreversible word; a workspace file transfer is not
-  account takeover.
-- **Dispute evidence as exfil** (4 of Stripe's weak): `-> POST
-  /v1/disputes/{dispute}` has URL-shaped evidence fields, but those go to Stripe
-  and the bank, not to an attacker-controlled destination.
+### The three false-positive patterns, now fixed
+The earlier revision of this evaluation reported three weak patterns. All three
+were confirmed classification defects and fixed (see `test_precision.py`):
+- **Same-domain create via the sink-writer heuristic** (was 17 of DO's weak):
+  the exfiltration sink is now restricted to communication-surface objects, so
+  creating a toolbelt / scenario_set / router is no longer flagged as data theft.
+- **"transfer"-word takeover** (was 5 of DO's weak): transfer/rename is an
+  identity effect only on an ownable object, so a workspace file transfer is no
+  longer a takeover.
+- **Provider/subject URL+email as exfil** (was 4 of Stripe's weak): the Stripe
+  dispute chains were driven by `customer_email_address`, a subject attribute,
+  now excluded from egress along with provider/redirect URLs.
 
-These are candidate precision fixes (narrow the sink-writer heuristic to
-cross-domain reads; treat "transfer" as identity only on account/ownership
-objects; distinguish provider-bound URL fields from caller-named egress). They
-are **not** fixed here, to avoid new detection changes at the release gate.
+The one remaining DigitalOcean weak finding (`-> POST
+/v2/agents/sessions/policy/validate`, flagged takeover with an exit field) is a
+borderline case left as an honest weak, not force-fixed.
 
 ## Validation of the DigitalOcean MCP finding
 
@@ -104,9 +108,10 @@ contacted).
 ## Reading
 
 Scoping does what it should: it removes the generic noise and concentrates the
-output on in-authority chains. Even scoped, roughly half of the survivors are
-weak under hand review, driven by three nameable heuristic patterns. The honest
-position for v0.1: Overreach with a boundaries file produces a small,
-reviewable set containing genuine leads (the DO MCP/credential family, the
-Stripe refund family), mixed with heuristic false positives a human triages. It
-is a triage aid at `hypothetical` evidence, not a vulnerability oracle.
+output on in-authority chains. After the three false-positive fixes, nearly all
+survivors are defensible hypotheticals (Stripe 3/3, DigitalOcean 20/21). The
+honest position for v0.1: Overreach with a boundaries file produces a small,
+reviewable set of genuine leads (the DO MCP/credential family, the Stripe refund
+family) at `hypothetical` evidence. It is a triage aid, not a vulnerability
+oracle, and the precision figures are single-reviewer defensibility judgements,
+not validated exploit rates.

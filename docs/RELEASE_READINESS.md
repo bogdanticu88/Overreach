@@ -28,26 +28,28 @@ is not a FAIL: nothing is broken and no claim is overstated.
 - Scoping works: a boundaries file removes all generic noise (Stripe 580→7, DO
   315→44); ~43–50% of the survivors are defensible hypotheticals by hand review.
 
-## Remaining soundness items (correctness, not cosmetic)
+## Soundness items
 
-These are precision limitations, each a nameable pattern with a known shape. None
-is a crash or an overclaim; all are documented. They are candidate fixes **after**
-v0.1, deliberately not changed at the gate:
+The three precision defects from the scoped evaluation are **fixed** (see
+`test_precision.py` and `scoped_eval.md`): scoped precision rose to Stripe 3/3
+and DigitalOcean 20/21.
 
-1. Sink-writer heuristic fires on same-domain create+read pairs (e.g. create a
-   toolbelt whose description is read back), producing data-theft false
-   positives. Fix direction: require the writer and reader to be in different
-   trust domains, or the read to be attacker-reachable.
-2. `transfer`/`session` identity wording tags workspace file transfers as
-   takeover. Fix direction: treat `transfer` as identity only on account /
-   ownership objects.
-3. Provider-bound URL fields (e.g. Stripe dispute evidence links) are treated as
-   caller-named egress. Fix direction: distinguish a destination the caller names
-   from a provider-fixed URL.
-4. Trigger-terminal chains (push_mirrors-sync, hooks/{id}/tests, workflow
-   dispatches) are recalled only at their setup op, counted as the three Gitea
-   misses. Fix direction: model the trigger step, or credit the setup op.
-5. Cross-file `$ref` specs are not resolved (must be bundled first) — a
+- ~~Sink-writer heuristic fires on same-domain create+read pairs.~~ Fixed:
+  exfiltration sinks are restricted to communication-surface objects.
+- ~~`transfer` wording tags workspace transfers as takeover.~~ Fixed: gated on an
+  ownable object.
+- ~~Provider-bound URLs / subject emails treated as egress.~~ Fixed: excluded from
+  egress detection.
+
+Remaining, documented, not release-blocking:
+
+1. Trigger-terminal chains (push_mirrors-sync, hooks/{id}/tests, workflow
+   dispatches) are recalled only at their setup op — the three Gitea misses.
+   Fix direction: model the trigger step, or credit the setup op.
+2. One borderline DigitalOcean scoped finding (`-> POST
+   /v2/agents/sessions/policy/validate`) remains weak; left honest rather than
+   force-fixed.
+3. Cross-file `$ref` specs are not resolved (must be bundled first) — a
    documented limitation, not a defect.
 
 ## Remaining packaging / documentation tasks (not soundness)

@@ -219,9 +219,9 @@ scorer (`docs/baselines/rescore.py`, `baseline_rescore.md`): Gitea recall is
 Mattermost is **13–15/20** depending on terminal-map strictness. The real-world
 evaluation (`realworld_eval.md`) records behaviour on unfamiliar large specs, and
 the boundaries-scoped evaluation (`scoped_eval.md`) shows scoping cutting Stripe
-from 580 to 7 findings and DigitalOcean from 315 to 44, with every scoped finding
-hand-labelled (roughly half are defensible hypotheticals, the rest nameable
-false-positive patterns). All three live under `docs/baselines/`.
+from 469 to 3 findings and DigitalOcean from 246 to 21, with every scoped finding
+hand-labelled (Stripe 3/3 and DigitalOcean 20/21 are defensible hypotheticals
+after the precision fixes). All three live under `docs/baselines/`.
 
 ## Safety
 

@@ -40,15 +40,16 @@ scanning. This is recorded as expected behaviour, not a defect.
 | Spec | Ops parsed | Fields | Chains | specific / generic | Dup ids | Cap hit | Warnings | Total time | Peak RSS |
 |---|---|---|---|---|---|---|---|---|---|
 | Petstore | 4 | 6 | **0** | 0 / 0 | 0 | no | 0 | 0.02 s | 18 MB |
-| Stripe | 612 | 8,732 | 580 | 364 / 216 | 0 | no | 1 | ~0.5 s | 59 MB |
-| DigitalOcean | 858 | 4,160 | 315 | 91 / 224 | 0 | no | 1 | ~0.9 s | 45–59 MB |
+| Stripe | 612 | 8,732 | 469 | 281 / 188 | 0 | no | 1 | ~0.5 s | 59 MB |
+| DigitalOcean | 858 | 4,160 | 246 | 63 / 183 | 0 | no | 1 | ~0.9 s | 45–59 MB |
 
-> These counts are current after the later correctness fixes (credential/key
-> effect modelling and gating identity/money effects to writing methods). An
-> earlier revision of this file reported Stripe at 681 chains; the method-gating
-> fix removed the GET-as-fraud/takeover false terminals. See
-> `baseline_rescore.md` for the Gitea/Mattermost re-score and `scoped_eval.md`
-> for the boundaries-scoped results and per-finding labelling.
+> These counts are current after the correctness fixes made during hardening:
+> credential/key and ownership-transfer effect modelling, gating identity/money
+> effects to writing methods, restricting the exfil sink to communication
+> surfaces, and excluding provider/subject URLs and emails from egress. Earlier
+> revisions reported Stripe at 681 then 580 chains as these fixes removed false
+> terminals. See `baseline_rescore.md` for the Gitea/Mattermost re-score and
+> `scoped_eval.md` for the boundaries-scoped results and per-finding labelling.
 
 All chains are evidence level `hypothetical` (static analysis never raises
 evidence; only the replay harness does, and replay scenarios exist only for the
