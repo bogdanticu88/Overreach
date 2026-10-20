@@ -121,23 +121,27 @@ class CaptureTransport:
         self._log.clear()
 
 
-# A pinning sender receives (url, payload, validated_ip). It MUST open its
-# connection to validated_ip (with the URL's host as Host / TLS SNI) and MUST
-# NOT re-resolve the hostname — that is what closes the DNS-rebinding window.
-PinningSender = Callable[[str, dict[str, Any], str], None]
+# A pinning sender receives (url, payload, validated_ips). It MUST open its
+# connection to one of validated_ips, set the URL's hostname as the HTTP Host
+# header and TLS SNI (so certificate validation still applies), MUST NOT
+# re-resolve the hostname, and MUST re-apply is_blocked_destination to any
+# redirect target before following it. That is what closes the DNS-rebinding
+# window. No network sender ships with Overreach; one must be supplied.
+PinningSender = Callable[[str, dict[str, Any], list[str]], None]
 
 
 class GuardedHttpTransport:
     """Opt-in real delivery. Refuses blocked destinations, resolves a hostname
     once and refuses if any resolved address is non-public, then hands the sender
-    the single validated IP it must connect to.
+    the validated IPs it must connect to.
 
     The sender and resolver are injected so the guard can be tested without any
-    network. Because the guard passes the validated IP to the sender (rather than
-    only the URL), a correct sender never performs a second DNS lookup, so a
-    rebinding answer at connect time cannot reach an internal address. A sender
-    that ignores the pinned IP and re-resolves defeats this, which is why the
-    contract requires using it.
+    network. The guard passes the validated IPs to the sender (not only the URL),
+    so a correct sender never performs a second DNS lookup and a rebinding answer
+    at connect time cannot reach an internal address. A sender that ignores the
+    pinned IPs and re-resolves defeats this, which is why the contract requires
+    using them. Delivery fails closed when no sender is supplied: the guard never
+    reports a send it did not make.
     """
 
     def __init__(self, sender: PinningSender | None = None,
@@ -145,32 +149,35 @@ class GuardedHttpTransport:
         self._sender = sender
         self._resolver = resolver or _default_resolver
         self.sent: list[tuple[str, dict[str, Any]]] = []
-        self.pinned: list[tuple[str, str]] = []   # (url, validated ip) actually sent
+        self.pinned: list[tuple[str, list[str]]] = []  # (url, validated ips) sent
         self.refused: list[str] = []
 
     def deliver(self, destination: str, payload: dict[str, Any]) -> bool:
+        if self._sender is None:
+            # Fail closed: with no sender there is no validated connection to make,
+            # so do not report a delivery.
+            self.refused.append(destination)
+            return False
         if is_blocked_destination(destination):
             self.refused.append(destination)
             return False
         host = urlparse(destination).hostname or ""
         literal = _as_ip(host)
         if literal is not None:
-            pinned_ip = str(literal)       # already validated public by the guard
+            validated_ips = [str(literal)]   # already validated public by the guard
         else:
             # A hostname: resolve ONCE here, refuse if any resolved address is
-            # non-public, and pin the connection to one validated address so the
+            # non-public, and pin the connection to the validated addresses so the
             # sender does not resolve again (DNS rebinding).
             resolved = self._resolver(host)
-            validated = [r for r in resolved
-                         if (ip := _as_ip(r)) is not None and not _is_blocked_ip(ip)]
-            if not resolved or len(validated) != len(resolved):
+            validated_ips = [r for r in resolved
+                             if (ip := _as_ip(r)) is not None and not _is_blocked_ip(ip)]
+            if not resolved or len(validated_ips) != len(resolved):
                 self.refused.append(destination)
                 return False
-            pinned_ip = validated[0]
-        if self._sender is not None:
-            self._sender(destination, payload, pinned_ip)
+        self._sender(destination, payload, validated_ips)
         self.sent.append((destination, payload))
-        self.pinned.append((destination, pinned_ip))
+        self.pinned.append((destination, validated_ips))
         return True
 
     def captured(self, destination: str) -> list[dict[str, Any]]:

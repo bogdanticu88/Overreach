@@ -22,10 +22,14 @@ bypasses and a stale-doc note. All fixed with regression tests:
 - **High — DNS rebinding still bypassed the guard.** The guard validated the
   resolved IPs but then handed the sender the original URL, so a sender that
   re-resolved at connect time could reach loopback. Fixed: `GuardedHttpTransport`
-  resolves once and passes the single validated IP to the sender (new pinning
-  sender contract `(url, payload, validated_ip)`); the sender must connect to
-  that IP, never re-resolve. Regression test drives a rebinding resolver and
-  asserts the sender receives the validated public address.
+  resolves once and passes the validated IPs to the sender (pinning contract
+  `(url, payload, validated_ips)`). The contract requires the sender to connect
+  to one of those IPs, set the URL hostname as Host / TLS SNI, not re-resolve,
+  and re-apply the guard to any redirect target; delivery fails closed when no
+  sender is supplied. Overreach ships no network sender — one must be supplied,
+  which is the remaining integration-time condition. Regression tests drive a
+  rebinding resolver (asserting the validated public address, not loopback) and
+  the no-sender fail-closed path.
 - **Medium — `load_path` could still read unbounded input** (a named pipe reports
   size 0; a file can grow/swap between stat and read). Fixed: open the fd
   non-blocking, reject non-regular files via `fstat`, and read with a hard
@@ -63,7 +67,7 @@ nothing is broken and no claim is overstated.
 
 ## What the evidence shows
 
-- Quality gates: ruff, mypy (strict), pytest (97), Bandit (0 issues), pip-audit
+- Quality gates: ruff, mypy (strict), pytest (98), Bandit (0 issues), pip-audit
   (clean) — all green. Package builds (sdist + wheel), `twine check` passes, and a
   clean-venv install runs `profile`/`scan`/`validate` and the flagship demo.
 - Evidence integrity: static analysis is always `hypothetical`; only exact-
