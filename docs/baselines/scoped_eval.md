@@ -43,7 +43,7 @@ labelling below tests that.
 
 ## Manual labelling of the scoped findings
 
-Every scoped finding (all 7 Stripe, all 44 DigitalOcean) was labelled by hand.
+Every scoped finding (all 3 Stripe, all 21 DigitalOcean) was labelled by hand.
 
 **Criterion for PLAUSIBLE** (a defensible *hypothetical*, not a confirmed
 exploit): the entry is a genuine outside-authorable free-text field **and** the

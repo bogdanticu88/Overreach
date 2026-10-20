@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
       - name: Lint (ruff)
-        run: python -m ruff check src tests
+        run: python -m ruff check src tests demo docs
       - name: Type-check (mypy, strict)
         run: python -m mypy src/overreach
       - name: Tests

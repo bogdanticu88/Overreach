@@ -16,11 +16,12 @@ import re
 import sys
 
 sys.path.insert(0, "src")
-from overreach.chains import find_chains          # noqa: E402
-from overreach.infer import infer_api             # noqa: E402
-from overreach.ingest import load_path, merge_docs  # noqa: E402
 
 import yaml  # noqa: E402
+
+from overreach.chains import find_chains  # noqa: E402
+from overreach.infer import infer_api  # noqa: E402
+from overreach.ingest import load_path, merge_docs  # noqa: E402
 
 # Directory holding the fetched specs (see docs/baselines/baseline_rescore.md
 # for the exact sources and commits). Override with OVERREACH_SPECS.

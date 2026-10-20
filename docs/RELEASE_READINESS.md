@@ -14,9 +14,29 @@ installs cleanly, and the tool demonstrably finds defensible composed attack
 paths on unfamiliar APIs (the DigitalOcean MCP/credential family) while staying
 quiet on a trivial control (Petstore: 0 findings).
 
-### Independent review round (resolved)
+### Independent review round 2 (resolved)
 
-An independent reviewer examined `v0.1.0-rc` at `72d3cda` and returned a FAIL
+A second review of `v0.1.0-rc` at `ea1fbaa` returned a FAIL with two residual
+bypasses and a stale-doc note. All fixed with regression tests:
+
+- **High — DNS rebinding still bypassed the guard.** The guard validated the
+  resolved IPs but then handed the sender the original URL, so a sender that
+  re-resolved at connect time could reach loopback. Fixed: `GuardedHttpTransport`
+  resolves once and passes the single validated IP to the sender (new pinning
+  sender contract `(url, payload, validated_ip)`); the sender must connect to
+  that IP, never re-resolve. Regression test drives a rebinding resolver and
+  asserts the sender receives the validated public address.
+- **Medium — `load_path` could still read unbounded input** (a named pipe reports
+  size 0; a file can grow/swap between stat and read). Fixed: open the fd
+  non-blocking, reject non-regular files via `fstat`, and read with a hard
+  `_MAX_BYTES+1` bound. Regression test rejects a FIFO.
+- **Low — stale counts** (labelled-finding counts and the test total) and a
+  `rescore.py` import-order lint. Fixed; CI lint now also covers `demo` and
+  `docs`.
+
+### Independent review round 1 (resolved)
+
+A first review of `72d3cda` returned a FAIL
 with one High, three Medium, and one Low finding, plus two process notes. All are
 now fixed with regression tests (see the "review finding" commits):
 
@@ -43,7 +63,7 @@ nothing is broken and no claim is overstated.
 
 ## What the evidence shows
 
-- Quality gates: ruff, mypy (strict), pytest (85), Bandit (0 issues), pip-audit
+- Quality gates: ruff, mypy (strict), pytest (97), Bandit (0 issues), pip-audit
   (clean) — all green. Package builds (sdist + wheel), `twine check` passes, and a
   clean-venv install runs `profile`/`scan`/`validate` and the flagship demo.
 - Evidence integrity: static analysis is always `hypothetical`; only exact-

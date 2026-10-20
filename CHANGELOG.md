@@ -38,7 +38,7 @@ interrupt them, and can validate chains against a bundled reference API.
   chain, never promoted by a different scripted attack.
 - **Reports.** JSON, SARIF 2.1.0, a self-contained HTML report, and a plain
   narrative. CLI: `profile`, `scan`, `validate`.
-- **Quality.** ruff, mypy (strict), pytest (85 tests), Bandit and a runtime
+- **Quality.** ruff, mypy (strict), pytest (97 tests), Bandit and a runtime
   dependency audit, all in CI; GitHub Actions pinned to commit SHAs.
 
 ### Evidence model
