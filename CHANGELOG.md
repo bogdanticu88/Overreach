@@ -45,7 +45,7 @@ interrupt them, and can validate chains against a bundled reference API.
   default path ships no network sender.
 - **Reports.** JSON, SARIF 2.1.0, a self-contained HTML report, and a plain
   narrative. CLI: `profile`, `scan`, `validate`.
-- **Quality.** ruff, mypy (strict), pytest (104 tests), Bandit and a runtime
+- **Quality.** ruff, mypy (strict), pytest (106 tests), Bandit and a runtime
   dependency audit, all in CI; GitHub Actions pinned to commit SHAs.
 
 ### Evidence model

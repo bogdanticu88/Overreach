@@ -9,6 +9,7 @@ import pytest
 from overreach.reference_api.http_sender import (
     PinnedDeliveryError,
     RedirectRefused,
+    _host_header,
     pinning_http_sender,
 )
 from overreach.reference_api.transport import GuardedHttpTransport
@@ -66,6 +67,23 @@ def test_wired_through_guarded_transport_end_to_end():
     assert t.deliver("https://hooks.example.org/ci", {"ok": True}) is True
     assert seen["ip"] == "93.184.216.34"
     assert seen["host"] == "hooks.example.org"
+
+
+def test_host_header_includes_non_default_port():
+    # Default ports are omitted; a custom port must appear in the Host header so
+    # a webhook on that port routes correctly.
+    assert _host_header("h.example", 443, "https") == "h.example"
+    assert _host_header("h.example", 80, "http") == "h.example"
+    assert _host_header("h.example", 8443, "https") == "h.example:8443"
+    assert _host_header("h.example", 8080, "http") == "h.example:8080"
+
+
+def test_sender_passes_custom_port_through():
+    rec: dict = {}
+    pinning_http_sender(
+        "https://hooks.example.org:8443/ci", {"ok": True},
+        ["93.184.216.34"], _perform=_recording_perform(rec))
+    assert rec["port"] == 8443 and rec["host"] == "hooks.example.org"
 
 
 def test_default_perform_is_present():
