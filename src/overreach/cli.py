@@ -144,9 +144,9 @@ def main(argv: list[str] | None = None) -> int:
             if options:
                 print("Ranked fixes:")
                 for j, o in enumerate(options, 1):
-                    print(f"  Option {j}: breaks {o.chains_broken}/{o.chains_total} "
-                          f"chains, {o.workflow_hits} workflow hit(s), "
-                          f"effort {o.total_effort}")
+                    print(f"  Option {j}: prevents {o.chains_prevented}/"
+                          f"{o.chains_total} chains (covers {o.chains_covered}), "
+                          f"{o.workflow_hits} workflow hit(s), effort {o.total_effort}")
                     for ctl in o.controls:
                         print(f"    - {ctl.description}")
         if args.sarif:
@@ -179,15 +179,14 @@ def _validate_demo() -> int:
     """Scan the bundled reference API, then validate chains by executing them
     with canary data and watching the canary leave."""
     import json as _json
+    from importlib.resources import files
 
     from fastapi.testclient import TestClient
 
-    from importlib.resources import files
-
     from overreach.boundaries import load_text as load_boundaries
     from overreach.chains import find_chains
-    from overreach.replay import validate_chain
     from overreach.reference_api import app, reset_state
+    from overreach.replay import validate_chain
 
     reset_state()
     client = TestClient(app)
@@ -197,15 +196,24 @@ def _validate_demo() -> int:
     bnd = load_boundaries(bnd_text)
     chains = find_chains(api, boundaries=bnd)
     print(f"Reference API: {len(chains)} finding(s) "
-          f"(scoped by the bundled boundaries file).\n")
+          f"(scoped by the bundled boundaries file).")
+    print("Static analysis grades every finding 'hypothetical'. The replay "
+          "harness then executes each\nchain's exact operation sequence against "
+          "the in-process reference API with a unique canary.\n"
+          "A 'validated' mark means that scripted, deterministic replay observed "
+          "the effect; it is NOT\nevidence that a live LLM would independently "
+          "choose these steps.\n")
     for ch in chains:
         reset_state()
         res = validate_chain(ch, TestClient(app))
-        mark = "VALIDATED" if res.evidence.value == "validated" else res.evidence.value
-        print(f"[{ch.chain_id}] {ch.outcome.value}: {mark}")
+        if res.evidence.value == "validated":
+            mark = "static: hypothetical -> replay: VALIDATED (scripted)"
+        else:
+            mark = "static: hypothetical -> replay: not observed"
+        print(f"[{ch.chain_id}] {ch.outcome.value}  {mark}")
         print(f"    {narrative(ch)}")
         if res.detail:
-            print(f"    proof: {res.detail}"
+            print(f"    replay proof: {res.detail}"
                   + (f" (canary {res.canary})" if res.canary else ""))
         print()
     return 0

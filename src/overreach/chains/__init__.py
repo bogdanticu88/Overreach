@@ -12,7 +12,7 @@ the replay harness's job.
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
 from overreach.boundaries import Boundaries
@@ -74,6 +74,7 @@ class Chain:
     evidence: Evidence = Evidence.HYPOTHETICAL
     generic: bool = False            # cross-domain injected-agent reach
     entry_count: int = 1             # how many untrusted entries reach the terminal
+    terminal_exit: bool = False      # terminal makes a caller-named outbound request
 
     @property
     def chain_id(self) -> str:
@@ -115,6 +116,12 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
     links: list[WriteReadLink] = find_links(api)
     by_key = api.by_key()
     scoped = boundaries is not None and boundaries.allowed_ops is not None
+
+    # Operations that make a caller-named outbound request (a webhook-style
+    # exit). Only these are preventable by an egress allowlist; a cross-tenant
+    # read or a reader-visible-sink write exfiltrates by other means.
+    egress_ops = {op.key for op in api.operations
+                  if any(e.kind == EffectKind.SEND_OUT for e in op.effects)}
 
     def allowed(op_key: str) -> bool:
         return boundaries.allows(op_key) if boundaries else True
@@ -196,7 +203,8 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
             return
         out, impact, tconf = terminals[path[-1].op_key]
         ch = _make_chain(path, path[0].op_key, entry_field[path[0].op_key],
-                         out, impact, min(conf, tconf), by_key)
+                         out, impact, min(conf, tconf), by_key,
+                         terminal_exit=path[-1].op_key in egress_ops)
         if ch.chain_id not in seen:
             seen.add(ch.chain_id)
             chains.append(ch)
@@ -231,6 +239,7 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
             impact=impact, plausibility=0.65 if scoped else 0.5,
             min_confidence=round(min_conf, 2),
             generic=not scoped, entry_count=len(reachers),
+            terminal_exit=tkey in egress_ops,
         )
         if ch.chain_id not in seen:
             seen.add(ch.chain_id)
@@ -258,7 +267,8 @@ def find_chains(api: Api, *, max_depth: int = _MAX_DEPTH,
             for nxt in adj[cur.key]:
                 if any(s.op_key == nxt.key for s in path):
                     continue
-                step = Step(nxt.key, f"shares data with {cur.objects[-1] if cur.objects else 'prior step'}")
+                shared = cur.objects[-1] if cur.objects else "prior step"
+                step = Step(nxt.key, f"shares data with {shared}")
                 stack.append((nxt, path + (step,), min(conf, _path_conf(nxt))))
     # Keep only the shortest chain to each distinct (entry, terminal, outcome):
     # a reader does not need twenty variations of the same end, just the
@@ -299,7 +309,7 @@ def _boundaries(steps: tuple[Step, ...], by_key: dict[str, Operation],
 
 def _make_chain(path: tuple[Step, ...], entry: str, field_name: str,
                 outcome: Outcome, impact: int, min_conf: float,
-                by_key: dict[str, Operation]) -> Chain:
+                by_key: dict[str, Operation], *, terminal_exit: bool = False) -> Chain:
     # Plausibility: shorter chains and fewer identity switches are more likely
     # for an agent to walk. Heuristic placeholder until a model scores it.
     length_penalty = 0.15 * (len(path) - 1)
@@ -308,4 +318,5 @@ def _make_chain(path: tuple[Step, ...], entry: str, field_name: str,
         steps=path, source_op=entry, source_field=field_name, outcome=outcome,
         boundaries=_boundaries(path, by_key), impact=impact,
         plausibility=round(plausibility, 2), min_confidence=round(min_conf, 2),
+        terminal_exit=terminal_exit,
     )
