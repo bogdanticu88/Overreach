@@ -65,11 +65,16 @@ class Control:
 class Option:
     controls: tuple[Control, ...]
     chains_total: int
-    chains_prevented: int        # chains an enforcing control blocks (precondition met)
+    # Conditional prevention: an enforcing control is positioned where it would
+    # block the chain IF the enforcement assumption holds (the allowlist is
+    # actually restrictive, the permission is actually removed). This is not
+    # observed prevention; only a replay retest that enforces the control and
+    # re-runs the chain can set `verified` and demonstrate observed prevention.
+    chains_prevented: int        # conditional prevention (enforcement assumed)
     chains_covered: int          # chains any selected control is positioned on
     workflow_hits: int           # legitimate operations this option disturbs
     total_effort: int
-    verified: bool = False       # only a replay retest may set this True
+    verified: bool = False       # True only after an enforced replay retest (observed)
 
     @property
     def score(self) -> tuple[int, ...]:

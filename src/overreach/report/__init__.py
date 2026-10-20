@@ -27,10 +27,12 @@ def chain_to_dict(ch: Chain) -> dict[str, object]:
 
 def option_to_dict(opt: Option) -> dict[str, object]:
     return {
-        "chains_prevented": opt.chains_prevented,
+        # Conditional prevention assumes each enforcing control is actually
+        # enforced; observed_prevention is True only after an enforced retest.
+        "chains_prevented_conditional": opt.chains_prevented,
+        "observed_prevention": opt.verified,
         "chains_covered": opt.chains_covered,
         "chains_total": opt.chains_total,
-        "verified": opt.verified,
         "workflow_hits": opt.workflow_hits,
         "total_effort": opt.total_effort,
         "controls": [{"kind": c.kind.value, "target": c.target,
@@ -135,9 +137,9 @@ def to_html(chains: list[Chain], options: list[Option], title: str) -> str:
                        for c in o.controls)
         fixes.append(f"""
         <div class="opt">
-          <div class="opthead">Option {j}: prevents {o.chains_prevented}/{o.chains_total}
-            chains (covers {o.chains_covered}) &middot; {o.workflow_hits} workflow hit(s)
-            &middot; effort {o.total_effort}</div>
+          <div class="opthead">Option {j}: would prevent {o.chains_prevented}/{o.chains_total}
+            chains (conditional on enforcement; covers {o.chains_covered}) &middot;
+            {o.workflow_hits} workflow hit(s) &middot; effort {o.total_effort}</div>
           <ul>{ctls}</ul>
         </div>""")
 

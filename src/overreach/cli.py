@@ -142,9 +142,10 @@ def main(argv: list[str] | None = None) -> int:
                       "any tool it holds.\n      Supply a boundaries file to limit "
                       "this to the agent's real scope.\n")
             if options:
-                print("Ranked fixes:")
+                print("Ranked fixes (conditional prevention assumes each control "
+                      "is actually enforced; verify by retest):")
                 for j, o in enumerate(options, 1):
-                    print(f"  Option {j}: prevents {o.chains_prevented}/"
+                    print(f"  Option {j}: would prevent {o.chains_prevented}/"
                           f"{o.chains_total} chains (covers {o.chains_covered}), "
                           f"{o.workflow_hits} workflow hit(s), effort {o.total_effort}")
                     for ctl in o.controls:
