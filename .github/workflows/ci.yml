@@ -2,8 +2,7 @@ name: ci
 
 on:
   pull_request:
-  push:
-    branches: [master, main]
+  push:          # run on every branch push (release-candidate branches included)
 
 # Least privilege: CI only needs to read the repository.
 permissions:

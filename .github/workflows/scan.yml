@@ -1,7 +1,9 @@
 name: overreach-scan
 
 # Scans an OpenAPI spec for agent attack chains and uploads the findings to
-# GitHub code scanning. Gates the build on any error-level finding.
+# GitHub code scanning. By default it REPORTS findings without failing the
+# build (the bundled example is deliberately vulnerable). To gate your own
+# build, add `--fail-on error` to the scan step below.
 # Point SPEC (and optionally BOUNDARIES) at your API's files.
 
 on:
