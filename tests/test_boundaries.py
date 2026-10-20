@@ -81,7 +81,9 @@ def test_cross_tenant_read_validates():
     reset_state()
     res = validate_cross_tenant_read(TestClient(refapp))
     assert res.evidence.value == "validated"
-    assert "ownership" in res.detail
+    assert "tenant" in res.detail
+    assert res.record is not None and res.record.ops[-1] == (
+        "GET /repos/{owner}/{repo}/contents/{path}")
 
 
 def test_no_tenant_boundary_no_cross_tenant_finding():

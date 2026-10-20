@@ -7,10 +7,10 @@ import json
 from fastapi.testclient import TestClient
 
 from overreach.chains import Evidence, Outcome, find_chains
-from overreach.ingest import load_text
 from overreach.infer import infer_api
-from overreach.replay import validate_exfiltration, validate_takeover
+from overreach.ingest import load_text
 from overreach.reference_api import app, reset_state
+from overreach.replay import validate_exfiltration, validate_takeover
 
 
 def _api():
@@ -42,7 +42,15 @@ def test_exfiltration_validates_with_canary():
     client = TestClient(app)
     res = validate_exfiltration(client)
     assert res.evidence == Evidence.VALIDATED
-    assert "webhook" in res.detail
+    assert "attacker destination" in res.detail
+    # Evidence is a structured record bound to the exact chain operations.
+    assert res.record is not None
+    assert res.record.ops == (
+        "GET /repos/{owner}/{repo}/issues/{issue_number}/comments",
+        "POST /repos/{owner}/{repo}/hooks",
+    )
+    assert res.record.leaked
+    assert res.record.identity and res.record.requests
 
 
 def test_takeover_validates_with_canary():
