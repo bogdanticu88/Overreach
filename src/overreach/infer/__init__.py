@@ -20,6 +20,14 @@ _IDENTITY_WORDS = ("password", "email", "token", "secret", "login",
                    "promote", "demote", "transfer", "rename")
 _MONEY_WORDS = ("payment", "charge", "invoice", "refund", "payout",
                 "subscription", "billing", "transfer", "order")
+# Path-object nouns for credential/key material. Adding one of these is
+# persistent access that outlives the session (an SSH/GPG/deploy key, an app
+# password), which is a takeover-class effect the lexical word list misses.
+# Matched on the path-derived object noun, not a blob substring, so "monkey" or
+# "keyword" cannot trigger it.
+_CREDENTIAL_OBJECTS = frozenset((
+    "key", "gpg_key", "ssh_key", "deploy_key", "credential", "secret",
+))
 _IRREVERSIBLE_WORDS = ("delete", "purge", "destroy", "transfer", "merge",
                        "archive", "finalize", "finalise")
 _OBJECT_RE = re.compile(r"[A-Za-z][A-Za-z0-9_]*")
@@ -83,6 +91,11 @@ def infer_operation(op: Operation) -> Operation:
     if any(w in blob for w in _IDENTITY_WORDS):
         effects.append(Effect(EffectKind.CHANGE_IDENTITY, target,
                               Provenance.INFERRED, 0.55, "identity-related wording"))
+    # Adding credential/key material (non-GET) is persistent access.
+    if method != "get" and any(o in _CREDENTIAL_OBJECTS for o in objects):
+        effects.append(Effect(EffectKind.CHANGE_IDENTITY, target,
+                              Provenance.INFERRED, 0.6,
+                              "adds credential/key material (persistent access)"))
     if any(w in blob for w in _MONEY_WORDS):
         effects.append(Effect(EffectKind.MOVE_MONEY, target, Provenance.INFERRED,
                               0.5, "money-related wording"))

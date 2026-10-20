@@ -38,6 +38,7 @@ _IDENTITY_SPECIFIC = frozenset((
     "email", "password", "token", "secret", "role", "permission",
     "membership", "credential", "apikey", "2fa", "mfa",
     "collaborator", "scheme", "promote", "demote", "transfer", "rename",
+    "key", "gpg_key", "ssh_key", "deploy_key",
 ))
 _MODEL_MAX_CONFIDENCE: Confidence = 0.75
 
