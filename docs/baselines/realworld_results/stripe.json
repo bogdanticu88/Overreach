@@ -1,0 +1,334 @@
+{
+  "spec": "/tmp/claude-0/-home-claude/e9d66056-8566-55d9-8f58-1e4ebee14b01/scratchpad/specs/stripe/openapi/spec3.json",
+  "title": "Stripe API",
+  "version": "2026-09-30.endive",
+  "source_hash": "7cff4cc46d065410",
+  "operations_parsed": 612,
+  "fields_extracted": 8732,
+  "exit_fields": 162,
+  "chains_total": 681,
+  "chains_by_outcome": {
+    "data_theft": 170,
+    "fraud": 383,
+    "takeover": 92,
+    "destruction": 36
+  },
+  "chains_by_evidence": {
+    "hypothetical": 681
+  },
+  "specific": 383,
+  "generic": 298,
+  "duplicate_chain_ids": 0,
+  "chain_cap_hit": false,
+  "warnings_count": 1,
+  "warning_kinds": {
+    "spec uses oneOf/anyOf": 1
+  },
+  "time_ingest_s": 0.319,
+  "time_infer_s": 0.019,
+  "time_find_s": 0.406,
+  "time_total_s": 0.745,
+  "peak_rss_mib": 58.9,
+  "sample": [
+    {
+      "id": "edf5b26d3083",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v1/financial_connections/accounts",
+        "field": "product_description"
+      },
+      "path": [
+        "GET /v1/financial_connections/accounts",
+        "POST /v1/financial_connections/sessions"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "d62382df6d1a",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v1/financial_connections/accounts/{account}",
+        "field": "product_description"
+      },
+      "path": [
+        "GET /v1/financial_connections/accounts/{account}",
+        "POST /v1/financial_connections/sessions"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "0365cee6bef1",
+      "outcome": "fraud",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": false,
+      "source": {
+        "op": "GET /v1/billing/feedback_options",
+        "field": "description"
+      },
+      "path": [
+        "GET /v1/billing/feedback_options",
+        "POST /v1/billing/feedback_options/{id}/deactivate"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "7ac4e1bf65b6",
+      "outcome": "fraud",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": false,
+      "source": {
+        "op": "GET /v1/billing/feedback_options",
+        "field": "description"
+      },
+      "path": [
+        "GET /v1/billing/feedback_options",
+        "POST /v1/billing/feedback_options/{id}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "ebd4f8ac7b73",
+      "outcome": "fraud",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": false,
+      "source": {
+        "op": "GET /v1/billing/feedback_options",
+        "field": "description"
+      },
+      "path": [
+        "GET /v1/billing/feedback_options",
+        "GET /v1/billing/feedback_options/{id}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "739cc520f0cc",
+      "outcome": "fraud",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": false,
+      "source": {
+        "op": "GET /v1/billing/feedback_options",
+        "field": "description"
+      },
+      "path": [
+        "GET /v1/billing/feedback_options",
+        "POST /v1/billing/feedback_options"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "39daa3498fac",
+      "outcome": "fraud",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": false,
+      "source": {
+        "op": "GET /v1/billing/feedback_options/{id}",
+        "field": "description"
+      },
+      "path": [
+        "GET /v1/billing/feedback_options/{id}",
+        "POST /v1/billing/feedback_options/{id}/deactivate"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "198338c0d78d",
+      "outcome": "fraud",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": false,
+      "source": {
+        "op": "GET /v1/billing/feedback_options/{id}",
+        "field": "description"
+      },
+      "path": [
+        "GET /v1/billing/feedback_options/{id}",
+        "POST /v1/billing/feedback_options/{id}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "059467af2ddb",
+      "outcome": "fraud",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": false,
+      "source": {
+        "op": "GET /v1/billing/feedback_options/{id}",
+        "field": "description"
+      },
+      "path": [
+        "GET /v1/billing/feedback_options/{id}",
+        "POST /v1/billing/feedback_options"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "8e378b98f763",
+      "outcome": "fraud",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": false,
+      "source": {
+        "op": "GET /v1/billing/feedback_options/{id}",
+        "field": "description"
+      },
+      "path": [
+        "GET /v1/billing/feedback_options/{id}",
+        "GET /v1/billing/feedback_options"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "c1fd9e9c1e47",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v1/checkout/sessions",
+        "field": "custom_message"
+      },
+      "path": [
+        "GET /v1/checkout/sessions",
+        "POST /v1/financial_connections/sessions"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "5f7378b5d72e",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v1/checkout/sessions",
+        "field": "custom_message"
+      },
+      "path": [
+        "GET /v1/checkout/sessions",
+        "POST /v1/checkout/sessions"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "fbecaf7a3aef",
+      "outcome": "fraud",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v1/checkout/sessions",
+        "field": "custom_message"
+      },
+      "path": [
+        "GET /v1/checkout/sessions",
+        "POST /v1/billing_portal/sessions"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "bfdda858bdd4",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v1/checkout/sessions/{session}",
+        "field": "custom_message"
+      },
+      "path": [
+        "GET /v1/checkout/sessions/{session}",
+        "POST /v1/financial_connections/sessions"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "9ba43c9c6414",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v1/checkout/sessions/{session}",
+        "field": "custom_message"
+      },
+      "path": [
+        "GET /v1/checkout/sessions/{session}",
+        "POST /v1/checkout/sessions"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    }
+  ]
+}

@@ -1,0 +1,334 @@
+{
+  "spec": "/tmp/claude-0/-home-claude/e9d66056-8566-55d9-8f58-1e4ebee14b01/scratchpad/specs/do_bundled.json",
+  "title": "DigitalOcean API",
+  "version": "2.0",
+  "source_hash": "fbb4a1293861afa3",
+  "operations_parsed": 858,
+  "fields_extracted": 4160,
+  "exit_fields": 106,
+  "chains_total": 315,
+  "chains_by_outcome": {
+    "data_theft": 119,
+    "takeover": 23,
+    "fraud": 16,
+    "destruction": 157
+  },
+  "chains_by_evidence": {
+    "hypothetical": 315
+  },
+  "specific": 87,
+  "generic": 228,
+  "duplicate_chain_ids": 0,
+  "chain_cap_hit": false,
+  "warnings_count": 1,
+  "warning_kinds": {
+    "spec uses oneOf/anyOf": 1
+  },
+  "time_ingest_s": 0.193,
+  "time_infer_s": 0.037,
+  "time_find_s": 0.703,
+  "time_total_s": 0.934,
+  "peak_rss_mib": 44.6,
+  "sample": [
+    {
+      "id": "cf2e194b215e",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/action-gateway/mcp-servers/{server_ref}",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/action-gateway/mcp-servers/{server_ref}",
+        "POST /v2/action-gateway/mcp-servers"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "bf9ececf76df",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/agents/configs",
+        "field": "log_message_timestamp_type"
+      },
+      "path": [
+        "GET /v2/agents/configs",
+        "PATCH /v2/databases/{database_cluster_uuid}/config"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "18663103a58d",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/agents/configs/{config_id}",
+        "field": "log_message_timestamp_type"
+      },
+      "path": [
+        "GET /v2/agents/configs/{config_id}",
+        "PATCH /v2/databases/{database_cluster_uuid}/config"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "46f3adb0f326",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/databases/{database_cluster_uuid}/config",
+        "field": "log_message_timestamp_type"
+      },
+      "path": [
+        "GET /v2/databases/{database_cluster_uuid}/config",
+        "PATCH /v2/databases/{database_cluster_uuid}/config"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "3c788c753d23",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/databases/{database_cluster_uuid}/schema-registry/config",
+        "field": "log_message_timestamp_type"
+      },
+      "path": [
+        "GET /v2/databases/{database_cluster_uuid}/schema-registry/config",
+        "PATCH /v2/databases/{database_cluster_uuid}/config"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "390639990b5d",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/databases/{database_cluster_uuid}/schema-registry/config/{subject_name}",
+        "field": "log_message_timestamp_type"
+      },
+      "path": [
+        "GET /v2/databases/{database_cluster_uuid}/schema-registry/config/{subject_name}",
+        "PATCH /v2/databases/{database_cluster_uuid}/config"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "19dd25c83b30",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/uptime/checks/{check_id}/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/uptime/checks/{check_id}/alerts",
+        "PUT /v2/uptime/checks/{check_id}/alerts/{alert_id}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "54c23c5f9c5e",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/uptime/checks/{check_id}/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/uptime/checks/{check_id}/alerts",
+        "POST /v2/uptime/checks/{check_id}/alerts"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "9e133ecdebdc",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/uptime/checks/{check_id}/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/uptime/checks/{check_id}/alerts",
+        "PUT /v2/uptime/checks/{check_id}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "1aa2fca74f2e",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/uptime/checks/{check_id}/alerts",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/uptime/checks/{check_id}/alerts",
+        "POST /v2/uptime/checks"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "4ba2b37bf609",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "PUT /v2/uptime/checks/{check_id}/alerts/{alert_id}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "e70a813527b9",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "POST /v2/uptime/checks/{check_id}/alerts"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "6bdb7a226dca",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "PUT /v2/uptime/checks/{check_id}"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "f72120d1d94a",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.75,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/uptime/checks/{check_id}/alerts/{alert_id}",
+        "POST /v2/uptime/checks"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 1
+    },
+    {
+      "id": "0bc40230f844",
+      "outcome": "data_theft",
+      "impact": 5,
+      "plausibility": 0.5,
+      "evidence": "hypothetical",
+      "terminal_exit": true,
+      "source": {
+        "op": "GET /v2/action-gateway/mcp-servers",
+        "field": "description"
+      },
+      "path": [
+        "GET /v2/action-gateway/mcp-servers",
+        "POST /v2/action-gateway/connections"
+      ],
+      "boundaries": [
+        "untrusted text drives a privileged action"
+      ],
+      "entry_count": 54
+    }
+  ]
+}
