@@ -65,10 +65,9 @@ unscoped run to match the baselines, which also assume broad access.
 
 ## Note on recency (2026-10-20)
 
-The recall figures above were measured before the Phase-1 precision tuning (the
-lazy `$ref` resolver and the tightened taint free-text hints, which dropped
-`name`/`title`/`subject`). Recall here is matched by terminal operation, and the
-recovered families rely on strong free-text entries (`body`, `comment`,
-`description`) that the tuning kept, so the figures are expected to hold; a
-re-score against the Gitea and Mattermost specs is a tracked next step and is not
-yet reflected here.
+The recall figures above were measured before the Phase-1 precision tuning. A
+reproducible re-score has since been done — see `baseline_rescore.md` and
+`rescore.py`. Result: Gitea reproduces 17/20 exactly (after a credential/key
+effect fix that recovered a taint-change regression for the right reason); the
+Mattermost figure is 13–15/20 depending on terminal-map strictness. The scorer
+and per-chain terminal maps are committed for inspection.

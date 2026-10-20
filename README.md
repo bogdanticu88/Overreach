@@ -213,12 +213,15 @@ Measured on Stripe, DigitalOcean and a Petstore control
 
 Two reviewers with no knowledge of the tool each hand-wrote the attack chains
 they would expect in two real products, from the operation list alone. The finder
-is scored against those independent baselines (`docs/baselines/`): recall was
-17 of 20 on one and 13 of 20 on the other, with the misses written down as a
-roadmap. (Those figures predate the Phase-1 precision tuning; see the note in
-`docs/baselines/comparison.md`.) The real-world evaluation
-(`docs/baselines/realworld_eval.md`) records behaviour on unfamiliar large specs,
-including the false-positive patterns above.
+is scored against those independent baselines with a committed, reproducible
+scorer (`docs/baselines/rescore.py`, `baseline_rescore.md`): Gitea recall is
+**17/20** (the three misses are trigger chains whose setup op is flagged) and
+Mattermost is **13–15/20** depending on terminal-map strictness. The real-world
+evaluation (`realworld_eval.md`) records behaviour on unfamiliar large specs, and
+the boundaries-scoped evaluation (`scoped_eval.md`) shows scoping cutting Stripe
+from 580 to 7 findings and DigitalOcean from 315 to 44, with every scoped finding
+hand-labelled (roughly half are defensible hypotheticals, the rest nameable
+false-positive patterns). All three live under `docs/baselines/`.
 
 ## Safety
 
