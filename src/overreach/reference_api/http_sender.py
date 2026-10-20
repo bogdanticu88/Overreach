@@ -46,19 +46,27 @@ class PinnedDeliveryError(Exception):
     """The pinned request could not be completed."""
 
 
+def _host_header(host: str, port: int, scheme: str) -> str:
+    """The HTTP Host header value: hostname alone on the scheme's default port,
+    hostname:port otherwise (RFC 7230), so a webhook on a custom port routes."""
+    default = 443 if scheme == "https" else 80
+    return host if port == default else f"{host}:{port}"
+
+
 def _default_perform(ip: str, host: str, port: int, scheme: str,
                      path: str, body: bytes, timeout: float) -> tuple[int, str | None]:
     raw = socket.create_connection((ip, port), timeout=timeout)
     try:
         if scheme == "https":
-            # SNI and certificate validation use the hostname, not the dialed IP.
+            # SNI and certificate validation use the hostname, not the dialed IP
+            # and not the port.
             ctx = ssl.create_default_context()
             sock: socket.socket = ctx.wrap_socket(raw, server_hostname=host)
         else:
             sock = raw
         request = (
             f"POST {path} HTTP/1.1\r\n"
-            f"Host: {host}\r\n"
+            f"Host: {_host_header(host, port, scheme)}\r\n"
             f"Content-Type: application/json\r\n"
             f"Content-Length: {len(body)}\r\n"
             f"Connection: close\r\n\r\n"
