@@ -14,8 +14,15 @@ from dataclasses import dataclass
 
 from overreach.model import Api, EffectKind, Operation
 
+# Field-name hints for free text an outside party can set and an agent later
+# reads as if it were instructions. Only strong carriers seed entry points.
+# "name"/"title"/"subject" are deliberately excluded: on real specs they match
+# data fields (account_holder_name, first_name, display name) far more often
+# than injection carriers, and drove the bulk of false positives in the
+# real-world evaluation (see docs/baselines/realworld_eval.md). A boundaries
+# file can still mark such a field untrusted explicitly.
 _FREE_TEXT_HINTS = ("body", "comment", "description", "text", "message",
-                    "content", "note", "title", "name", "subject", "bio")
+                    "content", "note", "bio")
 
 
 @dataclass(frozen=True, slots=True)
