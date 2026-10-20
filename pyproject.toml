@@ -1,6 +1,6 @@
 [project]
 name = "overreach-scan"
-version = "0.0.1"
+version = "0.1.0"
 description = "Overreach: find chains of legitimate API operations an AI agent can be led into, that combine into a harmful outcome."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -9,7 +9,7 @@ authors = [{ name = "Mihai-Bogdan Ticu" }]
 keywords = ["security", "ai-agents", "api-security", "openapi", "mcp", "appsec"]
 dependencies = ["PyYAML>=6.0"]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Topic :: Security",
   "Programming Language :: Python :: 3.12",

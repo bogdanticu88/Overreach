@@ -130,6 +130,9 @@ Exit codes: `0` success, `1` when `--fail-on` is set and a finding at or above t
 threshold exists (the threshold is by **impact**, not evidence level), `2` on a
 usage error. Output is deterministic for a given spec and boundaries file.
 
+Writing a boundaries file is covered in `docs/boundaries_guide.md`; release notes
+and limitations are in `CHANGELOG.md`.
+
 ## How it works
 
 Five stages, each useful on its own, each feeding the next.
